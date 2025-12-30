@@ -15,6 +15,7 @@ import {
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
 import { APP_CONFIG } from "@/config/app-config";
+import { useProfile } from "@/hooks/use-profile";
 import { sidebarItems } from "@/navigation/sidebar/sidebar-items";
 import { useAuthStore } from "@/stores/auth-store";
 import { usePreferencesStore } from "@/stores/preferences/preferences-provider";
@@ -69,16 +70,17 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   );
 
   const { user } = useAuthStore();
+  const { profile } = useProfile();
 
   const variant = isSynced ? sidebarVariant : props.variant;
   const collapsible = isSynced ? sidebarCollapsible : props.collapsible;
 
-  // Map authenticated user to NavUser format
+  // Map authenticated user to NavUser format with profile data
   const navUser = user
     ? {
-        name: user.email.split("@")[0], // Use email username as fallback
+        name: profile?.full_name || user.email, // Use full_name from profile, fallback to email
         email: user.email,
-        avatar: user.user_metadata?.avatar_url || "", // Support avatar from metadata
+        avatar: profile?.avatar_url || user.user_metadata?.avatar_url || "", // Support avatar from profile or metadata
       }
     : {
         name: "Guest",

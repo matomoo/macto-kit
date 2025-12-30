@@ -1,7 +1,5 @@
 "use client";
 
-import { useState } from "react";
-
 import { useRouter } from "next/navigation";
 
 import { BadgeCheck, Bell, CreditCard, LogOut } from "lucide-react";
@@ -16,20 +14,10 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { cn, getInitials } from "@/lib/utils";
+import { getInitials } from "@/lib/utils";
 import { useAuthStore } from "@/stores/auth-store";
 
-export function AccountSwitcher({
-  users,
-}: {
-  readonly users: ReadonlyArray<{
-    readonly id: string;
-    readonly name: string;
-    readonly email: string;
-    readonly avatar: string;
-    readonly role: string;
-  }>;
-}) {
+export function AccountSwitcher() {
   const router = useRouter();
   const { user, logout } = useAuthStore();
 
@@ -66,7 +54,7 @@ export function AccountSwitcher({
         </Avatar>
       </DropdownMenuTrigger>
       <DropdownMenuContent className="min-w-56 space-y-1 rounded-lg" side="bottom" align="end" sideOffset={4}>
-        <DropdownMenuItem className="p-0 border-l-2 border-l-primary bg-accent/50" disabled>
+        <DropdownMenuItem className="border-l-2 border-l-primary bg-accent/50 p-0" disabled>
           <div className="flex w-full items-center justify-between gap-2 px-1 py-1.5">
             <Avatar className="size-9 rounded-lg">
               <AvatarImage src={navUser.avatar || undefined} alt={navUser.name} />
@@ -80,7 +68,7 @@ export function AccountSwitcher({
         </DropdownMenuItem>
         <DropdownMenuSeparator />
         <DropdownMenuGroup>
-          <DropdownMenuItem>
+          <DropdownMenuItem onClick={() => router.push("/dashboard/account")}>
             <BadgeCheck />
             Account
           </DropdownMenuItem>
