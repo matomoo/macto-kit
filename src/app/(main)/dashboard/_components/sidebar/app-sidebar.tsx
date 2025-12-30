@@ -15,8 +15,8 @@ import {
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
 import { APP_CONFIG } from "@/config/app-config";
-import { rootUser } from "@/data/users";
 import { sidebarItems } from "@/navigation/sidebar/sidebar-items";
+import { useAuthStore } from "@/stores/auth-store";
 import { usePreferencesStore } from "@/stores/preferences/preferences-provider";
 
 import { NavMain } from "./nav-main";
@@ -68,8 +68,23 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     })),
   );
 
+  const { user } = useAuthStore();
+
   const variant = isSynced ? sidebarVariant : props.variant;
   const collapsible = isSynced ? sidebarCollapsible : props.collapsible;
+
+  // Map authenticated user to NavUser format
+  const navUser = user
+    ? {
+        name: user.email.split("@")[0], // Use email username as fallback
+        email: user.email,
+        avatar: user.user_metadata?.avatar_url || "", // Support avatar from metadata
+      }
+    : {
+        name: "Guest",
+        email: "guest@example.com",
+        avatar: "",
+      };
 
   return (
     <Sidebar {...props} variant={variant} collapsible={collapsible}>
@@ -91,7 +106,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         {/* <NavSecondary items={data.navSecondary} className="mt-auto" /> */}
       </SidebarContent>
       <SidebarFooter>
-        <NavUser user={rootUser} />
+        <NavUser user={navUser} />
       </SidebarFooter>
     </Sidebar>
   );
