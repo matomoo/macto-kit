@@ -1,5 +1,9 @@
 "use client";
 
+import { useEffect } from "react";
+
+import { useRouter } from "next/navigation";
+
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
@@ -8,6 +12,7 @@ import { z } from "zod";
 import { Button } from "@/components/ui/button";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { useAuthStore } from "@/stores/auth-store";
 
 const FormSchema = z
   .object({
@@ -21,6 +26,9 @@ const FormSchema = z
   });
 
 export function RegisterForm() {
+  const router = useRouter();
+  const { register, loading, error, clearError } = useAuthStore();
+
   const form = useForm<z.infer<typeof FormSchema>>({
     resolver: zodResolver(FormSchema),
     defaultValues: {
@@ -30,14 +38,22 @@ export function RegisterForm() {
     },
   });
 
+  useEffect(() => {
+    if (error) {
+      toast.error(error);
+    }
+  }, [error]);
+
   const onSubmit = async (data: z.infer<typeof FormSchema>) => {
-    toast("You submitted the following values", {
-      description: (
-        <pre className="mt-2 w-[320px] rounded-md bg-neutral-950 p-4">
-          <code className="text-white">{JSON.stringify(data, null, 2)}</code>
-        </pre>
-      ),
-    });
+    try {
+      clearError();
+      await register(data.email, data.password);
+      toast.success("Registration successful! Please check your email to confirm your account.");
+      // Optional: Redirect to login page or dashboard
+      // router.push("/auth/v1/login");
+    } catch {
+      // Error is already handled by the store and shown in the toast above
+    }
   };
 
   return (
@@ -88,8 +104,8 @@ export function RegisterForm() {
             </FormItem>
           )}
         />
-        <Button className="w-full" type="submit">
-          Register
+        <Button className="w-full" type="submit" disabled={loading}>
+          {loading ? "Registering..." : "Register"}
         </Button>
       </form>
     </Form>

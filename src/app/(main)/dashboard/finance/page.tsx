@@ -1,9 +1,23 @@
+"use client";
+
+import { useRequireAuth } from "@/hooks/use-require-auth";
+
 import { AccountOverview } from "./_components/account-overview";
 import { CurrencyExchange } from "./_components/currency-exchange";
 import { ExpenseSummary } from "./_components/expense-summary";
 import { FinancialOverview } from "./_components/financial-overview";
 
 export default function Page() {
+  const { loading } = useRequireAuth();
+
+  if (loading) {
+    return (
+      <div className="flex h-full items-center justify-center">
+        <div className="text-muted-foreground">Loading...</div>
+      </div>
+    );
+  }
+
   return (
     <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
       <div className="flex flex-col gap-4 lg:col-span-1">
