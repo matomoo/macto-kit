@@ -88,7 +88,11 @@ const defaultPrimary = {
   dark: defaultDarkPrimaryMatch?.[1]?.trim() ?? "",
 };
 
-presets.unshift({ label: "Default", value: "default", primary: defaultPrimary });
+presets.unshift({
+  label: "Default",
+  value: "default",
+  primary: defaultPrimary,
+});
 
 const generatedBlock = `// --- generated:themePresets:start ---
 
@@ -111,6 +115,7 @@ async function main() {
   const formatted = execFileSync("npx", ["@biomejs/biome", "format", "--stdin-file-path", outputPath], {
     input: updated,
     encoding: "utf8",
+    shell: true,
   });
 
   if (formatted === fileContent) {

@@ -11,10 +11,13 @@
     "check": "biome check",
     "check:fix": "biome check --write",
     "prepare": "husky",
-    "generate:presets": "ts-node --compiler-options '{\"module\":\"CommonJS\"}' src/scripts/generate-theme-presets.ts"
+    "generate:presetsmac": "ts-node --compiler-options '{\"module\":\"CommonJS\"}' src/scripts/generate-theme-presets.ts",
+    "generate:presets": "ts-node --project tsconfig.json --compiler-options \"{\\\"module\\\":\\\"CommonJS\\\"}\" src/scripts/generate-theme-presets.ts"
   },
   "lint-staged": {
-    "*.{js,ts,jsx,tsx}": ["biome check --write --no-errors-on-unmatched"]
+    "*.{js,ts,jsx,tsx}": [
+      "biome check --write --no-errors-on-unmatched"
+    ]
   },
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",
@@ -49,7 +52,7 @@
     "zustand": "^5.0.9"
   },
   "devDependencies": {
-    "@biomejs/biome": "2.3.8",
+    "@biomejs/biome": "^2.3.8",
     "@tailwindcss/postcss": "^4.1.18",
     "@types/node": "^22.19.3",
     "@types/react": "^19.2.7",
