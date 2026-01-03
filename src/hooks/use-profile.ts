@@ -103,8 +103,11 @@ export function useProfile() {
   };
 
   useEffect(() => {
-    fetchProfile();
-  }, [fetchProfile]);
+    // Only fetch if user exists and we haven't already loaded or are currently loading
+    if (user?.id && !profile && !loading) {
+      fetchProfile();
+    }
+  }, [user?.id, profile, loading, fetchProfile]);
 
   return {
     profile,

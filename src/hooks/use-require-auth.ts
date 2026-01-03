@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 
-import { usePathname, useRouter } from "next/navigation";
+import { useRouter } from "next/navigation";
 
 import { useAuthStore } from "@/stores/auth-store";
 
@@ -10,10 +10,12 @@ import { useAuthStore } from "@/stores/auth-store";
  */
 export function useRequireAuth() {
   const router = useRouter();
-  const pathname = usePathname();
-  const { isAuthenticated, loading } = useAuthStore();
+  const { isAuthenticated, loading, hydrated } = useAuthStore();
 
   useEffect(() => {
+    // Wait for Zustand to hydrate from localStorage
+    if (!hydrated) return;
+
     // Don't redirect while checking auth
     if (loading) return;
 
@@ -21,7 +23,7 @@ export function useRequireAuth() {
     if (!isAuthenticated) {
       router.replace("/auth/v1/login");
     }
-  }, [isAuthenticated, loading, router]);
+  }, [isAuthenticated, loading, hydrated, router]);
 
   return { isAuthenticated, loading };
 }

@@ -13,6 +13,8 @@ import { PreferencesStoreProvider } from "@/stores/preferences/preferences-provi
 
 import "./globals.css";
 
+import { Providers } from "./providers";
+
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
@@ -46,7 +48,7 @@ export default function RootLayout({ children }: Readonly<{ children: ReactNode 
             contentLayout={content_layout}
             navbarStyle={navbar_style}
           >
-            {children}
+            <Providers>{children}</Providers>
             <Toaster />
           </PreferencesStoreProvider>
         </AuthProvider>
