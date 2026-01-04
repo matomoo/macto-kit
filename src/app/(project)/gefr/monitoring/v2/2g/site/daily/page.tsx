@@ -1,7 +1,7 @@
 "use client";
 // biome-ignore assist/source/organizeImports: <will fix later>
 import { FilterBy_Date_Multi_SiteId } from "@/app/(project)/gefr/_component/filter-site/filter-by-date-multi-siteid";
-import PageAggCustom2GDaily from "@/app/(project)/gefr/_component/gefr/ui-v2/agg-custom-2g-daily-v4";
+import PageAggCustom2GDaily from "@/app/(project)/gefr/_component/gefr/ui-v2/agg-custom-2g-daily-v5";
 import { TwH3 } from "@/app/(project)/gefr/_component/typography/typography";
 
 export default function DashboardPage() {
@@ -16,7 +16,7 @@ export default function DashboardPage() {
         apiPath={"meas-dy-site-2g"}
         aggregateBy="BTS_NAME"
         filterLabel="BTS Name"
-        columnNumber={3}
+        columnNumber={2}
       />
     </div>
   );

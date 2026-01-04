@@ -393,21 +393,21 @@ const TableComparison2GDailyV2: React.FC<{ data: Agg2gModel[] }> = ({ data }) =>
   };
 
   return (
-    <div className="grid grid-cols-1 gap-6 rounded-lg bg-white p-4 shadow lg:grid-cols-6">
+    <div className="grid grid-cols-1 gap-6 rounded-lg bg-white p-2 shadow lg:grid-cols-6">
       <div className="col-span-2 space-y-6">
-        <div className="grid gap-4 rounded-2xl bg-slate-200 p-4">
+        <div className="grid gap-4 rounded-2xl bg-slate-200 p-4 text-sm">
           <DateRangePicker title="Before Period" range={beforeRange} setRange={setBeforeRange} />
           <DateRangePicker title="After Period" range={afterRange} setRange={setAfterRange} />
         </div>
 
         <div className="grid gap-2 rounded-2xl bg-slate-100 p-4">
-          <h3 className="font-semibold text-lg">Productivity</h3>
+          <h3 className="font-semibold">Productivity</h3>
           {comparisonData
             .filter((row) => row.metric === "TCH Traffic (Erl)" || row.metric === "Total Payload (MB)")
-            .map((row, index) => (
-              <div key={index}>
+            .map((row, _index) => (
+              <div key={row.metric}>
                 <div
-                  className={`flex justify-between font-semibold ${row.growth > 5 ? "text-green-600" : row.growth < -5 ? "text-red-600" : "text-yellow-600"}`}
+                  className={`flex justify-between font-semibold text-sm ${row.growth > 5 ? "text-green-600" : row.growth < -5 ? "text-red-600" : "text-yellow-600"}`}
                 >
                   <div>{row.metric}</div>
                   <div>{row.growth.toFixed(2)}%</div>
@@ -418,16 +418,16 @@ const TableComparison2GDailyV2: React.FC<{ data: Agg2gModel[] }> = ({ data }) =>
       </div>
 
       <div className="comparison-table col-span-4">
-        <h3 className="mb-4 font-semibold text-lg">Comparison Results</h3>
-        <div className="mb-4 font-semibold">
+        <h3 className="mb-2 font-semibold text-lg">Comparison Results</h3>
+        <div className="text-sm">
           Date Before Range: {formatDateForDisplay(beforeRange.startDate)} to{" "}
           {formatDateForDisplay(beforeRange.endDate)}
         </div>
-        <div className="mb-4 font-semibold">
+        <div className="mb-2 text-sm">
           Date After Range: {formatDateForDisplay(afterRange.startDate)} to {formatDateForDisplay(afterRange.endDate)}
         </div>
         <div className="overflow-x-auto">
-          <table className="w-full border-collapse border border-gray-200">
+          <table className="w-full border-collapse border border-gray-200 text-sm">
             <thead>
               <tr className="bg-gray-50">
                 <th className="border border-gray-200 p-3 text-left font-medium">Metric</th>
@@ -439,8 +439,8 @@ const TableComparison2GDailyV2: React.FC<{ data: Agg2gModel[] }> = ({ data }) =>
               </tr>
             </thead>
             <tbody>
-              {comparisonData.map((row, index) => (
-                <tr key={index} className="hover:bg-gray-50">
+              {comparisonData.map((row, _index) => (
+                <tr key={row.metric} className="hover:bg-gray-50">
                   <td className="border border-gray-200 p-3 font-medium">{row.metric}</td>
                   <td className="border border-gray-200 p-3 text-right">{row.before.toFixed(2)}</td>
                   <td className="border border-gray-200 p-3 text-right">{row.after.toFixed(2)}</td>

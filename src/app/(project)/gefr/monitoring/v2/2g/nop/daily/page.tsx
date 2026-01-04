@@ -2,7 +2,7 @@
 // biome-ignore assist/source/organizeImports: <will fix later>
 import { FilterBy_Date_Batch } from "@/app/(project)/gefr/_component/filter-site/filter-by-date-batch";
 import { TwH3 } from "@/app/(project)/gefr/_component/typography/typography";
-import PageAggCustom2GDaily from "@/app/(project)/gefr/_component/gefr/ui-v2/agg-custom-2g-daily-v4";
+import PageAggCustom2GDaily from "@/app/(project)/gefr/_component/gefr/ui-v2/agg-custom-2g-daily-v5";
 import { useRequireAuth } from "@/hooks/use-require-auth";
 
 export default function DashboardNopPage() {

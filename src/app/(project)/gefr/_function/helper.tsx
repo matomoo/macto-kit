@@ -137,3 +137,27 @@ export const extractBandFromCellName = (cellName: string): string => {
       return "XXX";
   }
 };
+
+// Band Indicator Component
+export const BandIndicator = ({ band }: { band: string }) => {
+  const getBandColor = (band: string) => {
+    switch (band) {
+      case "DCS":
+        return "bg-purple-100 text-purple-800 border-purple-200";
+      case "GSM":
+        return "bg-green-100 text-green-800 border-green-200";
+      case "XXX":
+        return "bg-gray-100 text-gray-800 border-gray-200";
+      default:
+        return "bg-gray-100 text-gray-800 border-gray-200";
+    }
+  };
+
+  return (
+    <span
+      className={`ml-auto inline-flex items-center rounded-full border px-2 py-0.5 font-medium text-xs ${getBandColor(band)}`}
+    >
+      {band}
+    </span>
+  );
+};
