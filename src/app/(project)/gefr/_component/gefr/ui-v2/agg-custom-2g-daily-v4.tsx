@@ -9,14 +9,16 @@ import {
   ErrorState,
   exportToExcel,
   fnExportDataToExcel,
+  fnFilterByBand,
   fnFilterBySector,
   fnFilterData,
   LoadingState,
   NoDataState,
 } from "./additional-component";
 import TableComparison2GDailyV2 from "./table-comparison-2g-daily-v2";
-import { extractCellName } from "../../../_function/helper";
+import { extractBandFromCellName, extractCellName } from "../../../_function/helper";
 import { TwSmall } from "../../typography/typography";
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 
 interface AggCustomProps {
   area?: string;
@@ -38,6 +40,9 @@ export default function PageAggCustom2GDaily({
   const [allCells, setAllCells] = useState<string[]>([]);
   const [selectedSectors, setSelectedSectors] = useState<string[]>([]);
   const [allSectors, setAllSectors] = useState<string[]>([]);
+  const [selectedBands, setSelectedBands] = useState<string[]>([]);
+  const [allBands, setAllBands] = useState<string[]>([]);
+  const [filterBy, setFilterBy] = useState<string>("cell");
 
   const shouldFetch = !!dateRange2 && dateRange2.includes("|");
 
@@ -90,11 +95,21 @@ export default function PageAggCustom2GDaily({
 
       setAllSectors(uniqueSectors);
       setSelectedSectors(uniqueSectors);
+
+      // Extract unique band from cells
+      const uniqueBands: string[] = Array.from(
+        new Set(uniqueCells.map((cellName) => extractBandFromCellName(cellName))),
+      ).sort() as string[];
+
+      setAllBands(uniqueBands);
+      setSelectedBands(uniqueBands);
     } else {
       setAllCells([]);
       setSelectedCells([]);
       setAllSectors([]);
       setSelectedSectors([]);
+      setAllBands([]);
+      setSelectedBands([]);
     }
   }, [data, aggregateBy]);
 
@@ -116,6 +131,15 @@ export default function PageAggCustom2GDaily({
     });
   };
 
+  const handleBandsSelection = (band: string) => {
+    setSelectedBands((prev) => {
+      if (prev.includes(band)) {
+        return prev.filter((s) => s !== band);
+      }
+      return [...prev, band];
+    });
+  };
+
   const selectAllCells = () => {
     setSelectedCells([...allCells]);
   };
@@ -132,6 +156,14 @@ export default function PageAggCustom2GDaily({
     setSelectedSectors([]);
   };
 
+  const selectAllBands = () => {
+    setSelectedBands([...allBands]);
+  };
+
+  const clearAllBands = () => {
+    setSelectedBands([]);
+  };
+
   const filterDataBySelectedCells = (data: Agg2gModel[]) => {
     if (!data || selectedCells.length === 0) return [];
 
@@ -143,7 +175,7 @@ export default function PageAggCustom2GDaily({
     });
   };
 
-  const _filterDataBySector = (data: Agg2gModel[]) => {
+  const filterDataBySelectedSectors = (data: Agg2gModel[]) => {
     if (!data || selectedSectors.length === 0) return [];
 
     return data.filter((item) => {
@@ -155,6 +187,18 @@ export default function PageAggCustom2GDaily({
     });
   };
 
+  const filterDataBySelectedBands = (data: Agg2gModel[]) => {
+    if (!data || selectedBands.length === 0) return [];
+
+    return data.filter((item) => {
+      const cellName = aggregateBy.includes("BTS")
+        ? extractCellName(String(item[aggregateBy as keyof Agg2gModel] ?? "Unknown"))
+        : (String(item[aggregateBy as keyof Agg2gModel]) ?? "Unknown");
+      const band = extractBandFromCellName(cellName);
+      return selectedBands.includes(band);
+    });
+  };
+
   const handleExportAllData = () => {
     if (!data?.rows || data.rows.length === 0) {
       alert("No data available to export.");
@@ -163,6 +207,23 @@ export default function PageAggCustom2GDaily({
 
     const filename = `2G_Data__${new Date().toISOString().split("T")[0]}`;
     exportToExcel(data.rows, filename);
+  };
+
+  // Get filtered data based on current filterBy selection
+  const getFilteredData = () => {
+    if (!data?.rows) return [];
+
+    if (filterBy === "cell") {
+      return filterDataBySelectedCells(data.rows);
+    }
+    if (filterBy === "sector") {
+      return filterDataBySelectedSectors(data.rows);
+    }
+    if (filterBy === "band") {
+      return filterDataBySelectedBands(data.rows);
+      // return data.rows;
+    }
+    return [];
   };
 
   if (isPending) return <LoadingState />;
@@ -177,102 +238,158 @@ export default function PageAggCustom2GDaily({
     return <NoDataState message="No data available for the selected criteria" />;
   }
 
-  const updatedData = data.rows.map((item: Agg2gModel) => {
-    const baseItem = { ...item };
-    return baseItem;
-  });
-
-  const filteredData = filterDataBySelectedCells(updatedData);
-
-  console.log(filteredData);
+  const filteredData = getFilteredData();
 
   return (
     <div className="grid h-fit grid-cols-1 gap-4 rounded-2xl bg-slate-200 p-4">
       <div className="rounded-lg bg-white p-4 shadow-sm">{fnExportDataToExcel(handleExportAllData)}</div>
 
-      <div>
-        <TwSmall text={filterLabel} />
-        {fnFilterData(filterLabel, selectAllCells, allCells, clearAllCells, selectedCells, handleCellSelection)}
+      <div className="mb-6">
+        <div className="mb-3">
+          <TwSmall text="Filter View By" />
+        </div>
+
+        {/* Horizontal menu bar - always visible */}
+        <div className="flex items-center overflow-hidden rounded-lg border bg-white shadow-sm">
+          <ToggleGroup
+            type="single"
+            value={filterBy}
+            onValueChange={setFilterBy}
+            className="flex w-full *:data-[slot=toggle-group-item]:flex-1 *:data-[slot=toggle-group-item]:rounded-none *:data-[slot=toggle-group-item]:py-3"
+          >
+            <ToggleGroupItem
+              value="cell"
+              className="data-[state=on]:border-blue-200 data-[state=on]:bg-blue-50 data-[state=on]:text-blue-700"
+            >
+              <span className="font-medium text-sm">Cell</span>
+            </ToggleGroupItem>
+            <ToggleGroupItem
+              value="sector"
+              className="border-l data-[state=on]:border-blue-200 data-[state=on]:bg-blue-50 data-[state=on]:text-blue-700"
+            >
+              <span className="font-medium text-sm">Sector</span>
+            </ToggleGroupItem>
+            <ToggleGroupItem
+              value="band"
+              className="border-l data-[state=on]:border-blue-200 data-[state=on]:bg-blue-50 data-[state=on]:text-blue-700"
+            >
+              <span className="font-medium text-sm">Band</span>
+            </ToggleGroupItem>
+          </ToggleGroup>
+        </div>
       </div>
 
-      <div>
-        <TwSmall text={filterLabel} />
-        {fnFilterBySector(
-          filterLabel,
-          selectAllSectors,
-          allSectors,
-          clearAllSectors,
-          selectedSectors,
-          handleSectorSelection,
-        )}
-      </div>
+      {/* Conditional rendering based on filterBy selection */}
+      {filterBy === "cell" && (
+        <div>
+          <TwSmall text={`Select ${filterLabel}`} />
+          {fnFilterData(filterLabel, selectAllCells, allCells, clearAllCells, selectedCells, handleCellSelection)}
+        </div>
+      )}
+
+      {filterBy === "sector" && (
+        <div>
+          <TwSmall text={`Select Sector`} />
+          {fnFilterBySector(
+            "Sector",
+            selectAllSectors,
+            allSectors,
+            clearAllSectors,
+            selectedSectors,
+            handleSectorSelection,
+          )}
+        </div>
+      )}
+
+      {filterBy === "band" && (
+        <div>
+          <TwSmall text={`Select Band`} />
+          {fnFilterByBand("Band", selectAllBands, allBands, clearAllBands, selectedBands, handleBandsSelection)}
+        </div>
+      )}
 
       {isFetching ? (
         <LoadingState />
-      ) : filteredData.length === 0 ? (
-        <NoDataState
-          message={
-            selectedCells.length === 0
-              ? `Please select at least one ${filterLabel.toLowerCase()}`
-              : "No data available for selected cells"
-          }
-        />
       ) : (
-        <div className="grid grid-cols-1 gap-4">
-          <div className="grid grid-cols-1 gap-4">
-            <TableComparison2GDailyV2 data={filteredData} />
-          </div>
-          <div className={`grid grid-cols-1 md:grid-cols-${columnNumber} gap-4`}>
-            {[
-              { metric_num: "SDCCH_TRAFFIC_ERL", metric_denum: "DENUMBY1", title: "SDCCH Traffic (Erl)" },
-              { metric_num: "TCH_TRAFFIC_ERL", metric_denum: "DENUMBY1", title: "TCH Traffic (Erl)" },
-              { metric_num: "TOTAL_PAYLOAD_MB", metric_denum: "DENUMBY1", title: "Total Payload (MB)" },
-              { metric_num: "NUM_TCH_AVAIL", metric_denum: "DENUM_TCH_AVAIL", title: "TCH Availability (%)" },
-              { metric_num: "NUM_SD_BLOCK", metric_denum: "DENUM_SD_BLOCK", title: "SD Blocking (%)" },
-              { metric_num: "NUM_TCH_BLOCK", metric_denum: "DENUM_TCH_BLOCK", title: "TCH Blocking (%)" },
-              {
-                metric_num: "NUM_PDTCH_CONGESTION",
-                metric_denum: "DENUM_PDTCH_CONGESTION",
-                title: "PDTCH Congestion (%)",
-              },
-              { metric_num: "NUM_SDCCH_AVAIL", metric_denum: "DENUM_SDCCH_AVAIL", title: "SDCCH Availability (%)" },
-              { metric_num: "NUM_SDSR", metric_denum: "DENUM_SDSR", title: "SDSR (%)" },
-              { metric_num: "NUM_TCH_DROP", metric_denum: "DENUM_TCH_DROP", title: "TCH Drop Rate (%)" },
-              { metric_num: "NUM_HOSR", metric_denum: "DENUM_HOSR", title: "HOSR (%)" },
-              { metric_num: "PACKET_LOSS", metric_denum: "DENUMBY1", title: "Packet Loss (%)" },
-              { metric_num: "NUM_TBF_DL_EST", metric_denum: "DENUM_TBF_DL_EST", title: "TBF DL Establishment SR (%)" },
-              { metric_num: "NUM_TBF_UL_EST", metric_denum: "DENUM_TBF_UL_EST", title: "User DL Throughput (Kbps)" },
-              { metric_num: "NUMBER_SDCCH", metric_denum: "DENUMBY1", title: "Number of SDCCH" },
-              { metric_num: "NUMBER_TCH", metric_denum: "DENUMBY1", title: "Number of TCH" },
-              { metric_num: "NUMBER_STATIC_PDTCH", metric_denum: "DENUMBY1", title: "Number of Static PDTCH" },
-              { metric_num: "NUMBER_DYNAMIC_PDTCH", metric_denum: "DENUMBY1", title: "Number of Dynamic PDTCH" },
-              { metric_num: "NUMBER_TRX", metric_denum: "DENUMBY1", title: "Number of TRX" },
-              { metric_num: "TCH_HR_TRAFFIC", metric_denum: "DENUMBY1", title: "TCH HR Traffic" },
-              { metric_num: "TCH_FR_TRAFFIC", metric_denum: "DENUMBY1", title: "TCH FR Traffic" },
-              { metric_num: "NUM_DL_QUAL_05", metric_denum: "DENUM_DL_QUAL_05", title: "DL RX Quality (%)" },
-              { metric_num: "NUM_UL_QUAL_05", metric_denum: "DENUM_UL_QUAL_05", title: "UL RX Quality (%)" },
-              { metric_num: "NUM_TBF_COMP", metric_denum: "DENUM_TBF_COMP", title: "TBF Completion SR (%)" },
-              {
-                metric_num: "NUM_ICM_INTERFERENCE",
-                metric_denum: "DENUM_ICM_INTERFERENCE",
-                title: "ICM Interference (%)",
-              },
-              { metric_num: "NUM_DL_EMI", metric_denum: "DENUM_DL_EMI", title: "DL EVQI" },
-              { metric_num: "NUM_UL_EMI", metric_denum: "DENUM_UL_EMI", title: "UL EVQI" },
-            ].map((chart) => (
-              <LineChart2GAggDailyV8
-                key={chart.metric_num}
-                data={filteredData}
-                metric_num={chart.metric_num}
-                metric_denum={chart.metric_denum}
-                title={chart.title}
-                aggregation_by={aggregateBy} // Use the prop here
-                isExtractCellName={!!aggregateBy.includes("BTS")}
-                isSR100={chart.metric_num === "NUM_TBF_DL_EST"}
-              />
-            ))}
-          </div>
-        </div>
+        <>
+          {/* Show message when no items are selected (for cell and sector filters) */}
+          {filterBy === "cell" && selectedCells.length === 0 && (
+            <NoDataState message={`Please select at least one ${filterLabel.toLowerCase()}`} />
+          )}
+
+          {filterBy === "sector" && selectedSectors.length === 0 && (
+            <NoDataState message="Please select at least one sector" />
+          )}
+
+          {/* Show data when conditions are met */}
+          {(filterBy === "band" ||
+            (filterBy === "cell" && selectedCells.length > 0) ||
+            (filterBy === "sector" && selectedSectors.length > 0)) && (
+            <div className="grid grid-cols-1 gap-4">
+              <div className="grid grid-cols-1 gap-4">
+                <TableComparison2GDailyV2 data={filteredData} />
+              </div>
+              <div className={`grid grid-cols-1 md:grid-cols-${columnNumber} gap-4`}>
+                {[
+                  { metric_num: "SDCCH_TRAFFIC_ERL", metric_denum: "DENUMBY1", title: "SDCCH Traffic (Erl)" },
+                  { metric_num: "TCH_TRAFFIC_ERL", metric_denum: "DENUMBY1", title: "TCH Traffic (Erl)" },
+                  { metric_num: "TOTAL_PAYLOAD_MB", metric_denum: "DENUMBY1", title: "Total Payload (MB)" },
+                  { metric_num: "NUM_TCH_AVAIL", metric_denum: "DENUM_TCH_AVAIL", title: "TCH Availability (%)" },
+                  { metric_num: "NUM_SD_BLOCK", metric_denum: "DENUM_SD_BLOCK", title: "SD Blocking (%)" },
+                  { metric_num: "NUM_TCH_BLOCK", metric_denum: "DENUM_TCH_BLOCK", title: "TCH Blocking (%)" },
+                  {
+                    metric_num: "NUM_PDTCH_CONGESTION",
+                    metric_denum: "DENUM_PDTCH_CONGESTION",
+                    title: "PDTCH Congestion (%)",
+                  },
+                  { metric_num: "NUM_SDCCH_AVAIL", metric_denum: "DENUM_SDCCH_AVAIL", title: "SDCCH Availability (%)" },
+                  { metric_num: "NUM_SDSR", metric_denum: "DENUM_SDSR", title: "SDSR (%)" },
+                  { metric_num: "NUM_TCH_DROP", metric_denum: "DENUM_TCH_DROP", title: "TCH Drop Rate (%)" },
+                  { metric_num: "NUM_HOSR", metric_denum: "DENUM_HOSR", title: "HOSR (%)" },
+                  { metric_num: "PACKET_LOSS", metric_denum: "DENUMBY1", title: "Packet Loss (%)" },
+                  {
+                    metric_num: "NUM_TBF_DL_EST",
+                    metric_denum: "DENUM_TBF_DL_EST",
+                    title: "TBF DL Establishment SR (%)",
+                  },
+                  {
+                    metric_num: "NUM_TBF_UL_EST",
+                    metric_denum: "DENUM_TBF_UL_EST",
+                    title: "User DL Throughput (Kbps)",
+                  },
+                  { metric_num: "NUMBER_SDCCH", metric_denum: "DENUMBY1", title: "Number of SDCCH" },
+                  { metric_num: "NUMBER_TCH", metric_denum: "DENUMBY1", title: "Number of TCH" },
+                  { metric_num: "NUMBER_STATIC_PDTCH", metric_denum: "DENUMBY1", title: "Number of Static PDTCH" },
+                  { metric_num: "NUMBER_DYNAMIC_PDTCH", metric_denum: "DENUMBY1", title: "Number of Dynamic PDTCH" },
+                  { metric_num: "NUMBER_TRX", metric_denum: "DENUMBY1", title: "Number of TRX" },
+                  { metric_num: "TCH_HR_TRAFFIC", metric_denum: "DENUMBY1", title: "TCH HR Traffic" },
+                  { metric_num: "TCH_FR_TRAFFIC", metric_denum: "DENUMBY1", title: "TCH FR Traffic" },
+                  { metric_num: "NUM_DL_QUAL_05", metric_denum: "DENUM_DL_QUAL_05", title: "DL RX Quality (%)" },
+                  { metric_num: "NUM_UL_QUAL_05", metric_denum: "DENUM_UL_QUAL_05", title: "UL RX Quality (%)" },
+                  { metric_num: "NUM_TBF_COMP", metric_denum: "DENUM_TBF_COMP", title: "TBF Completion SR (%)" },
+                  {
+                    metric_num: "NUM_ICM_INTERFERENCE",
+                    metric_denum: "DENUM_ICM_INTERFERENCE",
+                    title: "ICM Interference (%)",
+                  },
+                  { metric_num: "NUM_DL_EMI", metric_denum: "DENUM_DL_EMI", title: "DL EVQI" },
+                  { metric_num: "NUM_UL_EMI", metric_denum: "DENUM_UL_EMI", title: "UL EVQI" },
+                ].map((chart) => (
+                  <LineChart2GAggDailyV8
+                    key={chart.metric_num}
+                    data={filteredData}
+                    metric_num={chart.metric_num}
+                    metric_denum={chart.metric_denum}
+                    title={chart.title}
+                    aggregation_by={aggregateBy} // Use the prop here
+                    isExtractCellName={!!aggregateBy.includes("BTS")}
+                    isSR100={chart.metric_num === "NUM_TBF_DL_EST"}
+                  />
+                ))}
+              </div>
+            </div>
+          )}
+        </>
       )}
     </div>
   );

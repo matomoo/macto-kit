@@ -120,3 +120,20 @@ export const parseDateRange = (rangeString: string | null): DateRange | undefine
     return undefined;
   }
 };
+
+export const extractBandFromCellName = (cellName: string): string => {
+  if (!cellName || cellName.length < 4) return "XXX";
+
+  // Extract MD from left(right(cellname,4),2)
+  const lastFourChars = cellName.slice(-4);
+  const bandCode = lastFourChars.slice(0, 2);
+  // Map band codes to actual band names
+  switch (bandCode) {
+    case "MD":
+      return "DCS";
+    case "MG":
+      return "GSM";
+    default:
+      return "XXX";
+  }
+};

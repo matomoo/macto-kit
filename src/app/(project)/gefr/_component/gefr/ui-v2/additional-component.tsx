@@ -231,3 +231,64 @@ export function fnFilterBySector(
     </div>
   );
 }
+
+export function fnFilterByBand(
+  filterLabel: string,
+  selectAllCells: () => void,
+  allCells: string[],
+  clearAllCells: () => void,
+  selectedCells: string[],
+  handleCellSelection: (cellName: string) => void,
+) {
+  return (
+    <div className="rounded-lg bg-white p-4 shadow-sm">
+      <div className="mb-3 flex items-center justify-between">
+        <h3 className="font-semibold">Filter by {filterLabel}:</h3>
+        <div className="flex gap-2">
+          <button
+            type="button"
+            onClick={selectAllCells}
+            className="rounded bg-blue-500 px-3 py-1 text-sm text-white transition-colors hover:bg-blue-600"
+            disabled={allCells.length === 0}
+          >
+            Select All
+          </button>
+          <button
+            type="button"
+            onClick={clearAllCells}
+            className="rounded bg-gray-500 px-3 py-1 text-sm text-white transition-colors hover:bg-gray-600"
+            disabled={allCells.length === 0}
+          >
+            Clear All
+          </button>
+        </div>
+      </div>
+
+      {allCells.length === 0 ? (
+        <NoDataState message={`No ${filterLabel.toLowerCase()}s found`} />
+      ) : (
+        <>
+          <div className="grid max-h-40 grid-cols-2 gap-2 overflow-y-auto md:grid-cols-3 lg:grid-cols-4">
+            {allCells.map((cellName) => (
+              <label key={cellName} className="flex items-center gap-2 text-sm">
+                <input
+                  type="checkbox"
+                  checked={selectedCells.includes(cellName)}
+                  onChange={() => handleCellSelection(cellName)}
+                  className="h-4 w-4 rounded text-blue-600 focus:ring-blue-500"
+                />
+                {cellName}
+              </label>
+            ))}
+          </div>
+
+          {selectedCells.length > 0 && (
+            <div className="mt-2 text-gray-600 text-sm">
+              Selected: {selectedCells.length} of {allCells.length} {filterLabel.toLowerCase()}s
+            </div>
+          )}
+        </>
+      )}
+    </div>
+  );
+}
