@@ -45,11 +45,11 @@ export const sidebarItems: NavGroup[] = [
         url: "/dashboard/finance",
         icon: Banknote,
       },
-      {
-        title: "Account",
-        url: "/dashboard/account",
-        icon: Banknote,
-      },
+      // {
+      //   title: "Account",
+      //   url: "/dashboard/account",
+      //   icon: Banknote,
+      // },
     ],
   },
   {

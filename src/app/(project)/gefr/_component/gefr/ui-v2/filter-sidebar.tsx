@@ -4,7 +4,7 @@
 import { Search, Filter, X } from "lucide-react";
 import { TwSmall } from "../../typography/typography";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
-import { fnExportDataToExcel } from "./additional-component";
+// import { fnExportDataToExcel } from "./additional-component";
 import { BandIndicator } from "../../../_function/helper";
 
 interface FilterSidebarProps {
@@ -203,7 +203,7 @@ export function FilterSidebar({
   onClearAllSectors,
   onSelectAllBands,
   onClearAllBands,
-  onExportData,
+  // onExportData,
   filterLabel,
   isMobileFilterOpen,
   onMobileFilterClose,
@@ -289,7 +289,7 @@ export function FilterSidebar({
       )}
 
       {/* Export Button in Sidebar */}
-      <div className="mt-4 border-t pt-4">{fnExportDataToExcel(onExportData)}</div>
+      {/* <div className="mt-4 border-t pt-4">{fnExportDataToExcel(onExportData)}</div> */}
     </>
   );
 
