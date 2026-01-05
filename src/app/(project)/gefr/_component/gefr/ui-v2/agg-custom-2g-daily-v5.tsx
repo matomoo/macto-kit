@@ -6,32 +6,12 @@ import { useFilterStore } from "@/stores/filterStore";
 import { useEffect, useState, useMemo, useCallback } from "react";
 import LineChart2GAggDailyV8 from "./line-chart-2g-agg-daily-v8";
 import type { Agg2gModel } from "@/types/schema";
-import {
-  ErrorState,
-  exportToExcel,
-  fnExportDataToExcel,
-  // fnFilterByBand,
-  // fnFilterBySector,
-  // fnFilterData,
-  // LoadingState,
-  NoDataState,
-} from "./additional-component";
-// import TableComparison2GDailyV2 from "./table-comparison-2g-daily-v2";
-import { BandIndicator, extractBandFromCellName, extractCellName } from "../../../_function/helper";
-import { TwSmall } from "../../typography/typography";
+import { ErrorState, exportToExcel, NoDataState } from "./additional-component";
+import { extractBandFromCellName, extractCellName } from "../../../_function/helper";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
-// import { FixedSizeList } from "react-window";
-import {
-  Search,
-  Filter,
-  Download,
-  // ChevronUp, ChevronDown,
-  X,
-  Grid,
-  Grid3X3,
-  LayoutGrid,
-} from "lucide-react";
+import { Download, Filter, Grid, Grid3X3, LayoutGrid } from "lucide-react";
 import PerformanceSummarySection from "./performance-summary-section";
+import FilterSidebar, { SummaryDashboard } from "./filter-sidebar";
 
 interface AggCustomProps {
   area?: string;
@@ -138,30 +118,6 @@ export default function PageAggCustom2GDaily({
     }
   }, [data, aggregateBy]);
 
-  // Filter lists based on search
-  // const filteredCells = useMemo(() =>
-  //   allCells.filter(cell =>
-  //     cell.toLowerCase().includes(cellSearch.toLowerCase())
-  //   ),
-  //   [allCells, cellSearch]
-  // );
-
-  // const filteredSectors = useMemo(() =>
-  //   allSectors.filter(sector =>
-  //     sector.toLowerCase().includes(sectorSearch.toLowerCase())
-  //   ),
-  //   [allSectors, sectorSearch]
-  // );
-
-  // const filteredBands = useMemo(() =>
-  //   allBands.filter(band =>
-  //     band.toLowerCase().includes(bandSearch.toLowerCase())
-  //   ),
-  //   [allBands, bandSearch]
-  // );
-
-  // const filteredData = useMemo(() => getFilteredData(), [data, filterBy, selectedCells, selectedSectors, selectedBands, aggregateBy]);
-
   const filteredCells = useMemo(
     () => allCells.filter((cell) => cell.toLowerCase().includes(cellSearch.toLowerCase())),
     [allCells, cellSearch],
@@ -177,7 +133,6 @@ export default function PageAggCustom2GDaily({
     [allBands, bandSearch],
   );
 
-  // Memoized filtered data calculation
   const filteredData = useMemo(() => {
     if (!data?.rows) return [];
 
@@ -219,7 +174,6 @@ export default function PageAggCustom2GDaily({
     return [];
   }, [data, filterBy, selectedCells, selectedSectors, selectedBands, aggregateBy]);
 
-  // Calculate key metrics for summary when collapsed
   const calculateSummaryMetrics = useCallback(() => {
     if (!filteredData || filteredData.length === 0) {
       return {
@@ -229,22 +183,18 @@ export default function PageAggCustom2GDaily({
       };
     }
 
-    // Calculate TCH Traffic (average of TCH_TRAFFIC_ERL)
     const tchTrafficSum = filteredData.reduce((sum: number, item: { TCH_TRAFFIC_ERL: any }) => {
       const traffic = Number(item.TCH_TRAFFIC_ERL) || 0;
       return sum + traffic;
     }, 0);
     const avgTchTraffic = filteredData.length > 0 ? tchTrafficSum / filteredData.length : 0;
 
-    // Calculate Total Payload (average of TOTAL_PAYLOAD_MB)
     const payloadSum = filteredData.reduce((sum: number, item: { TOTAL_PAYLOAD_MB: any }) => {
       const payload = Number(item.TOTAL_PAYLOAD_MB) || 0;
       return sum + payload;
     }, 0);
     const avgPayload = filteredData.length > 0 ? payloadSum / filteredData.length : 0;
 
-    // Calculate Productivity (this is an example - adjust based on your business logic)
-    // For example: productivity could be (TCH traffic / number of cells) or similar
     const productivity = allCells.length > 0 ? tchTrafficSum / allCells.length : 0;
 
     return {
@@ -265,7 +215,6 @@ export default function PageAggCustom2GDaily({
 
   const summaryMetrics = useMemo(() => calculateSummaryMetrics(), [calculateSummaryMetrics]);
 
-  // Get grid columns class based on chartLayout
   const getGridColumnsClass = () => {
     switch (chartLayout) {
       case 1:
@@ -279,7 +228,6 @@ export default function PageAggCustom2GDaily({
     }
   };
 
-  // Handler functions
   const handleCellSelection = (cellName: string) => {
     setSelectedCells((prev) => {
       if (prev.includes(cellName)) {
@@ -341,112 +289,6 @@ export default function PageAggCustom2GDaily({
     exportToExcel(data.rows, filename);
   };
 
-  // Enhanced Filter Components
-  // Add useCallback to prevent recreation
-  const EnhancedFilterWithSearch = useCallback(
-    ({
-      title,
-      items,
-      selectedItems,
-      onSelect,
-      onSelectAll,
-      onClear,
-      searchValue,
-      onSearchChange,
-      placeholder,
-    }: any) => (
-      <div className="space-y-3">
-        <div className="flex items-center justify-between">
-          <TwSmall text={title} />
-          <div className="flex gap-1">
-            <button
-              type="button"
-              onClick={onSelectAll}
-              className="rounded bg-blue-50 px-2 py-1 text-blue-700 text-xs hover:bg-blue-100"
-            >
-              All
-            </button>
-            <button
-              type="button"
-              onClick={onClear}
-              className="rounded bg-gray-50 px-2 py-1 text-gray-700 text-xs hover:bg-gray-100"
-            >
-              Clear
-            </button>
-          </div>
-        </div>
-        <div className="relative">
-          <Search className="-translate-y-1/2 absolute top-1/2 left-3 h-4 w-4 text-gray-400" />
-          <input
-            type="text"
-            placeholder={placeholder || `Search ${title.toLowerCase()}...`}
-            value={searchValue}
-            onChange={(e) => onSearchChange(e.target.value)}
-            className="w-full rounded-md border border-gray-300 py-2 pr-8 pl-9 text-sm focus:border-blue-500 focus:outline-none"
-          />
-          {searchValue && (
-            <button
-              type="button"
-              onClick={() => onSearchChange("")}
-              className="-translate-y-1/2 absolute top-1/2 right-2 h-4 w-4 text-gray-400 hover:text-gray-600"
-            >
-              <X size={14} />
-            </button>
-          )}
-        </div>
-        <div className="max-h-60 overflow-y-auto rounded border">
-          {items.length === 0 ? (
-            <div className="p-3 text-center text-gray-500 text-sm">No items found</div>
-          ) : (
-            items.map((item: string) => (
-              <label
-                key={item}
-                className={`flex cursor-pointer items-center gap-2 border-b px-3 py-2 last:border-b-0 hover:bg-gray-50 ${
-                  selectedItems.includes(item) ? "bg-blue-50" : ""
-                }`}
-              >
-                <input
-                  type="checkbox"
-                  checked={selectedItems.includes(item)}
-                  onChange={() => onSelect(item)}
-                  className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-                />
-                <span className="font-medium text-xs">{item}</span>
-                {filterBy === "band" && <BandIndicator band={item} />}
-              </label>
-            ))
-          )}
-        </div>
-        <div className="text-gray-500 text-xs">
-          {selectedItems.length} of {items.length} selected
-        </div>
-      </div>
-    ),
-    [filterBy],
-  );
-
-  // Summary Dashboard Component
-  const SummaryDashboard = () => (
-    <div className="grid grid-cols-2 gap-3 md:grid-cols-2">
-      <div className="rounded-lg bg-white p-3 shadow-sm">
-        <div className="text-gray-500 text-xs">Total Cells</div>
-        <div className="font-bold text-xl">{allCells.length}</div>
-      </div>
-
-      <div className="rounded-lg bg-white p-3 shadow-sm">
-        <div className="text-gray-500 text-xs">Selected Items</div>
-        <div className="font-bold text-xl">
-          {filterBy === "cell"
-            ? selectedCells.length
-            : filterBy === "sector"
-              ? selectedSectors.length
-              : selectedBands.length}
-        </div>
-      </div>
-    </div>
-  );
-
-  // Column Layout Toggle Component
   const ColumnLayoutToggle = () => (
     <div className="flex items-center gap-2">
       <span className="text-gray-500 text-sm">Layout:</span>
@@ -490,30 +332,6 @@ export default function PageAggCustom2GDaily({
     </div>
   );
 
-  // Performance Summary Toggle Component
-  // const PerformanceSummaryToggle = () => (
-  //   <button
-  //     type="button"
-  //     onClick={() => setIsPerformanceSummaryExpanded(!isPerformanceSummaryExpanded)}
-  //     className="flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm hover:bg-gray-50"
-  //   >
-  //     {isPerformanceSummaryExpanded ? (
-  //       <>
-  //         <ChevronUp size={16} />
-  //         <span>Collapse Summary</span>
-  //       </>
-  //     ) : (
-  //       <>
-  //         <ChevronDown size={16} />
-  //         <span>Expand Summary</span>
-  //       </>
-  //     )}
-  //   </button>
-  // );
-
-  // Performance Summary Section Component
-
-  // Enhanced Loading State
   const EnhancedLoadingState = () => (
     <div className="space-y-4">
       <div className="rounded-lg bg-white p-4 shadow-sm">
@@ -581,187 +399,55 @@ export default function PageAggCustom2GDaily({
 
       <div className="py-4 lg:py-6">
         <div className="grid grid-cols-1 gap-4 lg:grid-cols-12">
-          {/* Left sidebar - Filters (Desktop) */}
-          <div className="hidden lg:col-span-3 lg:block">
-            <div className="sticky top-20 space-y-4">
-              {/* Summary Dashboard */}
-              <SummaryDashboard />
-
-              {/* Filter Panel */}
-              <div className="rounded-xl bg-white p-4 shadow-sm">
-                <div className="mb-4">
-                  <div className="mb-2 flex items-center gap-2">
-                    <Filter size={16} className="text-gray-600" />
-                    <TwSmall text="Filter View By" />
-                  </div>
-                  <ToggleGroup
-                    type="single"
-                    value={filterBy}
-                    onValueChange={setFilterBy}
-                    className="flex *:data-[slot=toggle-group-item]:flex-1 *:data-[slot=toggle-group-item]:py-2"
-                  >
-                    <ToggleGroupItem
-                      value="cell"
-                      className="data-[state=on]:border-blue-200 data-[state=on]:bg-blue-50 data-[state=on]:text-blue-700"
-                    >
-                      <span className="font-medium text-sm">Cell</span>
-                    </ToggleGroupItem>
-                    <ToggleGroupItem
-                      value="sector"
-                      className="data-[state=on]:border-blue-200 data-[state=on]:bg-blue-50 data-[state=on]:text-blue-700"
-                    >
-                      <span className="font-medium text-sm">Sector</span>
-                    </ToggleGroupItem>
-                    <ToggleGroupItem
-                      value="band"
-                      className="data-[state=on]:border-blue-200 data-[state=on]:bg-blue-50 data-[state=on]:text-blue-700"
-                    >
-                      <span className="font-medium text-sm">Band</span>
-                    </ToggleGroupItem>
-                  </ToggleGroup>
-                </div>
-
-                {/* Dynamic Filter Content */}
-                {filterBy === "cell" && (
-                  <EnhancedFilterWithSearch
-                    title={`Select ${filterLabel}`}
-                    items={filteredCells}
-                    selectedItems={selectedCells}
-                    onSelect={handleCellSelection}
-                    onSelectAll={selectAllCells}
-                    onClear={clearAllCells}
-                    searchValue={cellSearch}
-                    onSearchChange={setCellSearch}
-                    placeholder={`Search ${filterLabel.toLowerCase()}...`}
-                  />
-                )}
-
-                {filterBy === "sector" && (
-                  <EnhancedFilterWithSearch
-                    title="Select Sector"
-                    items={filteredSectors}
-                    selectedItems={selectedSectors}
-                    onSelect={handleSectorSelection}
-                    onSelectAll={selectAllSectors}
-                    onClear={clearAllSectors}
-                    searchValue={sectorSearch}
-                    onSearchChange={setSectorSearch}
-                    placeholder="Search sectors..."
-                  />
-                )}
-
-                {filterBy === "band" && (
-                  <EnhancedFilterWithSearch
-                    title="Select Band"
-                    items={filteredBands}
-                    selectedItems={selectedBands}
-                    onSelect={handleBandsSelection}
-                    onSelectAll={selectAllBands}
-                    onClear={clearAllBands}
-                    searchValue={bandSearch}
-                    onSearchChange={setBandSearch}
-                    placeholder="Search bands..."
-                  />
-                )}
-
-                {/* Export Button in Sidebar */}
-                <div className="mt-4 border-t pt-4">{fnExportDataToExcel(handleExportAllData)}</div>
-              </div>
-            </div>
-          </div>
-
-          {/* Mobile Filter Overlay */}
-          {isMobileFilterOpen && (
-            <div className="fixed inset-0 z-40 lg:hidden">
-              <button
-                type="button"
-                className="absolute inset-0 bg-black/50"
-                onClick={() => setIsMobileFilterOpen(false)}
-                onKeyDown={(e) => {
-                  if (e.key === "Escape") {
-                    setIsMobileFilterOpen(false);
-                  }
-                }}
-                aria-label="Close filters"
-              />
-              <div className="absolute top-0 right-0 h-full w-80 overflow-y-auto bg-white p-4 shadow-xl">
-                <div className="mb-4 flex items-center justify-between">
-                  <h3 className="font-semibold">Filters</h3>
-                  <button
-                    type="button"
-                    onClick={() => setIsMobileFilterOpen(false)}
-                    className="rounded-full p-1 hover:bg-gray-100"
-                  >
-                    <X size={20} />
-                  </button>
-                </div>
-
-                {/* Mobile Filter Content */}
-                <div className="space-y-4">
-                  <SummaryDashboard />
-
-                  <div>
-                    <TwSmall text="Filter View By" />
-                    <ToggleGroup
-                      type="single"
-                      value={filterBy}
-                      onValueChange={setFilterBy}
-                      className="mt-2 flex *:data-[slot=toggle-group-item]:flex-1 *:data-[slot=toggle-group-item]:py-2"
-                    >
-                      <ToggleGroupItem value="cell">Cell</ToggleGroupItem>
-                      <ToggleGroupItem value="sector">Sector</ToggleGroupItem>
-                      <ToggleGroupItem value="band">Band</ToggleGroupItem>
-                    </ToggleGroup>
-                  </div>
-
-                  {filterBy === "cell" && (
-                    <EnhancedFilterWithSearch
-                      title={`Select ${filterLabel}`}
-                      items={filteredCells}
-                      selectedItems={selectedCells}
-                      onSelect={handleCellSelection}
-                      onSelectAll={selectAllCells}
-                      onClear={clearAllCells}
-                      searchValue={cellSearch}
-                      onSearchChange={setCellSearch}
-                    />
-                  )}
-
-                  {filterBy === "sector" && (
-                    <EnhancedFilterWithSearch
-                      title="Select Sector"
-                      items={filteredSectors}
-                      selectedItems={selectedSectors}
-                      onSelect={handleSectorSelection}
-                      onSelectAll={selectAllSectors}
-                      onClear={clearAllSectors}
-                      searchValue={sectorSearch}
-                      onSearchChange={setSectorSearch}
-                    />
-                  )}
-
-                  {filterBy === "band" && (
-                    <EnhancedFilterWithSearch
-                      title="Select Band"
-                      items={filteredBands}
-                      selectedItems={selectedBands}
-                      onSelect={handleBandsSelection}
-                      onSelectAll={selectAllBands}
-                      onClear={clearAllBands}
-                      searchValue={bandSearch}
-                      onSearchChange={setBandSearch}
-                    />
-                  )}
-                </div>
-              </div>
-            </div>
-          )}
+          {/* Left sidebar - Filters (Desktop) using new component */}
+          <FilterSidebar
+            // Summary data
+            allCells={allCells}
+            filterBy={filterBy}
+            selectedCells={selectedCells}
+            selectedSectors={selectedSectors}
+            selectedBands={selectedBands}
+            // Filter data
+            filteredCells={filteredCells}
+            filteredSectors={filteredSectors}
+            filteredBands={filteredBands}
+            // Search states
+            cellSearch={cellSearch}
+            sectorSearch={sectorSearch}
+            bandSearch={bandSearch}
+            // Handlers
+            onFilterByChange={setFilterBy}
+            onCellSearchChange={setCellSearch}
+            onSectorSearchChange={setSectorSearch}
+            onBandSearchChange={setBandSearch}
+            onCellSelection={handleCellSelection}
+            onSectorSelection={handleSectorSelection}
+            onBandSelection={handleBandsSelection}
+            onSelectAllCells={selectAllCells}
+            onClearAllCells={clearAllCells}
+            onSelectAllSectors={selectAllSectors}
+            onClearAllSectors={clearAllSectors}
+            onSelectAllBands={selectAllBands}
+            onClearAllBands={clearAllBands}
+            onExportData={handleExportAllData}
+            // Configuration
+            filterLabel={filterLabel}
+            // Mobile overlay props
+            isMobileFilterOpen={isMobileFilterOpen}
+            onMobileFilterClose={() => setIsMobileFilterOpen(false)}
+          />
 
           {/* Main content */}
           <div className="lg:col-span-9">
             {/* Mobile Summary Dashboard */}
             <div className="mb-4 lg:hidden">
-              <SummaryDashboard />
+              <SummaryDashboard
+                allCells={allCells}
+                filterBy={filterBy}
+                selectedCells={selectedCells}
+                selectedSectors={selectedSectors}
+                selectedBands={selectedBands}
+              />
             </div>
 
             {/* Error/Empty States */}
