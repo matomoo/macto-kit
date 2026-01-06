@@ -13,7 +13,7 @@ import {
   fnFilterData,
   LoadingState,
   NoDataState,
-} from "./additional-component";
+} from "../ui-v3/additional-component";
 import TableComparison4GDailyV1 from "./table-comparison-4g-daily-v1";
 import { useFilterStore } from "@/stores/filterStore";
 import { extractCellName } from "../../../_function/helper";

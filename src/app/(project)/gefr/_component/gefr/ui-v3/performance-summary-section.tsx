@@ -2,7 +2,7 @@
 
 // biome-ignore assist/source/organizeImports: <will fix later>
 import { ChevronDown, ChevronUp } from "lucide-react";
-import TableComparison2GDailyV2 from "./table-comparison-2g-daily-v2";
+import TableComparison2GDailyV2 from "../ui-v2/table-comparison-2g-daily-v2";
 import type { Agg2gModel } from "@/types/schema";
 
 interface PerformanceSummarySectionProps {
