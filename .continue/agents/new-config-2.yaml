@@ -1,0 +1,8 @@
+name: Local LM Studio Agent
+version: 1.0.0
+schema: v1
+models:
+  - name: LM Studio Local Model
+    provider: openai
+    model: deepseek/deepseek-r1-0528-qwen3-8b
+    apiBase: http://127.0.0.1:1234/v1

@@ -1,0 +1,37 @@
+{
+  "name": "LM Studio Local Config",
+  "version": "1.0.0",
+  "schema": "v1",
+  "models": [
+    {
+      "title": "DeepSeek R1 in LM Studio",
+      "provider": "openai",
+      "model": "deepseek/deepseek-r1-0528-qwen3-8b",
+      "apiBase": "http://127.0.0.1:1234/v1",
+      "apiKey": "not-needed"
+    }
+  ],
+  "context": [
+    {
+      "provider": "code"
+    },
+    {
+      "provider": "docs"
+    },
+    {
+      "provider": "diff"
+    },
+    {
+      "provider": "terminal"
+    },
+    {
+      "provider": "problems"
+    },
+    {
+      "provider": "folder"
+    },
+    {
+      "provider": "codebase"
+    }
+  ]
+}

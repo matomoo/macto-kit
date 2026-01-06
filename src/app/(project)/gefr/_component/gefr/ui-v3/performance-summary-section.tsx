@@ -2,7 +2,7 @@
 
 // biome-ignore assist/source/organizeImports: <will fix later>
 import { ChevronDown, ChevronUp } from "lucide-react";
-import TableComparison2GDailyV2 from "../ui-v2/table-comparison-2g-daily-v2";
+import TableComparison2GDaily from "./table-comparison-2g-daily-v3";
 import type { Agg2gModel } from "@/types/schema";
 
 interface PerformanceSummarySectionProps {
@@ -113,7 +113,7 @@ export function PerformanceSummarySection({
       {isExpanded ? (
         // Expanded view - show full table
         <div className="overflow-hidden rounded-xl border bg-white shadow-sm">
-          <TableComparison2GDailyV2 data={filteredData} />
+          <TableComparison2GDaily data={filteredData} />
         </div>
       ) : (
         // Collapsed view - show summary cards
