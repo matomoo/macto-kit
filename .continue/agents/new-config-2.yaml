@@ -2,7 +2,11 @@ name: Local LM Studio Agent
 version: 1.0.0
 schema: v1
 models:
-  - name: LM Studio Local Model
+  - name: Deepseek
     provider: openai
-    model: deepseek/deepseek-r1-0528-qwen3-8b
+    model: deepseek-coder-6.7b-instruct
+    apiBase: http://127.0.0.1:1234/v1
+  - name: Qwen
+    provider: openai
+    model: qwen2.5-coder-7b-instruct
     apiBase: http://127.0.0.1:1234/v1

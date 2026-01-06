@@ -3,7 +3,7 @@
 // biome-ignore assist/source/organizeImports: <will fix later>
 import type { Agg2gModel } from "@/types/schema";
 import React, { useState, useMemo, useCallback } from "react";
-import { subDays, format, startOfDay, endOfDay } from "date-fns";
+import { subDays, format, startOfDay, endOfDay, differenceInDays, addDays } from "date-fns";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Button } from "@/components/ui/button";
 import { Calendar as CalendarIcon } from "lucide-react";
@@ -33,21 +33,28 @@ interface ComparisonResult {
 const TableComparison2GDaily: React.FC<{ data: Agg2gModel[] }> = ({ data }) => {
   const timezone = "Asia/Makassar"; // Central Indonesia Time
 
-  console.log(data);
+  const dateStrings = data.map((item) => item.BEGIN_TIME);
+  dateStrings.sort((a, b) => Date.parse(a) - Date.parse(b));
+
   // Helper function to create dates in the correct timezone
   const createDateInTimezone = (date: Date) => {
     const zonedDate = toZonedTime(date, timezone);
     return fromZonedTime(zonedDate, timezone);
   };
 
+  const firstDateString = dateStrings[0];
+  const lastDateString = dateStrings[dateStrings.length - 1];
+
+  const diffInDays = differenceInDays(lastDateString, firstDateString);
+
   const [afterRange, setAfterRange] = useState<DateRange>({
-    startDate: createDateInTimezone(subDays(new Date(), 4)).toISOString(),
-    endDate: createDateInTimezone(subDays(new Date(), 1)).toISOString(),
+    startDate: createDateInTimezone(subDays(lastDateString, diffInDays < 7 ? 1 : 2)).toISOString(),
+    endDate: createDateInTimezone(subDays(lastDateString, diffInDays < 7 ? 0 : 0)).toISOString(),
   });
 
   const [beforeRange, setBeforeRange] = useState<DateRange>({
-    startDate: createDateInTimezone(subDays(new Date(), 11)).toISOString(),
-    endDate: createDateInTimezone(subDays(new Date(), 8)).toISOString(),
+    startDate: createDateInTimezone(addDays(firstDateString, diffInDays < 7 ? 0 : 0)).toISOString(),
+    endDate: createDateInTimezone(addDays(firstDateString, diffInDays < 7 ? 1 : 2)).toISOString(),
   });
 
   // Metric configuration - easy to add new metrics
