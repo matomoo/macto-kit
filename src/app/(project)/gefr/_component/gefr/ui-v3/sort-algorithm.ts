@@ -101,11 +101,9 @@ export function quickSort(arr: number[]): number[] {
 
 // Merge Sort Algorithm
 
-export function mergeSort(arr: number[]): [number[], number] {
-  // returns sorted array and inversion count (optional, but useful for educational purposes)
-  if (arr.length <= 1) {
-    return arr;
-  }
+// Merge Sort Algorithm (without inversion count)
+export function mergeSort(arr: number[]): number[] {
+  if (arr.length <= 1) return arr;
 
   const middle = Math.floor(arr.length / 2);
   const leftArr = arr.slice(0, middle);
@@ -115,29 +113,29 @@ export function mergeSort(arr: number[]): [number[], number] {
   const sortedLeft = mergeSort(leftArr);
   const sortedRight = mergeSort(rightArr);
 
-  return mergeArrays(sortedLeft, sortedRight, arr.length);
+  return mergeArrays(sortedLeft, sortedRight);
 }
 
-export function mergeArrays(left: number[], right: number[]): [number[], number] {
+export function mergeArrays(left: number[], right: number[]): number[] {
+  // This will store the result of our merge
   const mergedArray: number[] = [];
-  let i = 0;
-  let j = 0;
-  let inversions = 0;
 
-  while (i < left.length && j < right.length) {
-    if (left[i] <= right[j]) {
-      mergedArray.push(left[i++]);
+  while (left.length && right.length) {
+    if (left[0] <= right[0]) {
+      mergedArray.push(left.shift() as number);
     } else {
-      mergedArray.push(right[j++]);
-      inversions += left.length - i;
+      mergedArray.push(right.shift() as number);
     }
   }
 
-  return [mergedArray.concat(left).concat(right), inversions];
+  // In case there are elements left in either the left or right array, we should add them to our result
+  while (left.length) mergedArray.push(left.shift() as number);
+  while (right.length) mergedArray.push(right.shift() as number);
+
+  return mergedArray;
 }
 
 // Insertion Sort
-
 export function insertionSort(arr: number[]): void {
   for (let i = 1; i < arr.length; i++) {
     const key = arr[i];

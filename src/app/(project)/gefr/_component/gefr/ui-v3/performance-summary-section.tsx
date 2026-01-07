@@ -42,11 +42,13 @@ export function PerformanceSummaryToggle({ isExpanded, onToggle }: { isExpanded:
 export function SummaryCard({
   title,
   value,
+  data,
   description,
   color = "blue",
 }: {
   title: string;
   value: string;
+  data?: Agg2gModel[];
   description: string;
   color?: "blue" | "green" | "purple";
 }) {
@@ -121,6 +123,7 @@ export function PerformanceSummarySection({
           <SummaryCard
             title="Productivity"
             value={metrics.productivity.percentage}
+            data={filteredData}
             description={`Based on selected ${getFilterLabel()}`}
             color="blue"
           />

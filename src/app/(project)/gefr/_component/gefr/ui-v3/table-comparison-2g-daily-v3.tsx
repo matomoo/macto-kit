@@ -1,42 +1,25 @@
-"use client";
-
 // biome-ignore assist/source/organizeImports: <will fix later>
 import type { Agg2gModel } from "@/types/schema";
-import React, { useState, useMemo, useCallback } from "react";
-import { subDays, format, startOfDay, endOfDay, differenceInDays, addDays } from "date-fns";
+import type React from "react";
+import { useState, useMemo } from "react";
+import { subDays, format, differenceInDays, addDays } from "date-fns";
+import { toZonedTime, fromZonedTime } from "date-fns-tz";
+
+// Import utilities
+import { calculateComparisonData } from "./comparison-calculator";
+import { get2GMetricConfigs } from "./metric-configs";
+import type { ComparisonResult, DateRange } from "./comparison-types";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Button } from "@/components/ui/button";
-import { Calendar as CalendarIcon } from "lucide-react";
+import { CalendarIcon } from "lucide-react";
 import { Calendar } from "@/components/ui/calendar";
-import { toZonedTime, fromZonedTime } from "date-fns-tz";
-import { calculateSuccessRate0, calculateSuccessRate100 } from "../../../_function/helper";
-
-interface DateRange {
-  startDate: string;
-  endDate: string;
-}
-
-interface MetricCalculator {
-  name: string;
-  calculate: (data: Agg2gModel[]) => number;
-  format?: (value: number) => string;
-}
-
-interface ComparisonResult {
-  metric: string;
-  before: number;
-  after: number;
-  delta: number;
-  growth: number;
-}
 
 const TableComparison2GDaily: React.FC<{ data: Agg2gModel[] }> = ({ data }) => {
-  const timezone = "Asia/Makassar"; // Central Indonesia Time
+  const timezone = "Asia/Makassar";
 
   const dateStrings = data.map((item) => item.BEGIN_TIME);
   dateStrings.sort((a, b) => Date.parse(a) - Date.parse(b));
 
-  // Helper function to create dates in the correct timezone
   const createDateInTimezone = (date: Date) => {
     const zonedDate = toZonedTime(date, timezone);
     return fromZonedTime(zonedDate, timezone);
@@ -44,7 +27,6 @@ const TableComparison2GDaily: React.FC<{ data: Agg2gModel[] }> = ({ data }) => {
 
   const firstDateString = dateStrings[0];
   const lastDateString = dateStrings[dateStrings.length - 1];
-
   const diffInDays = differenceInDays(lastDateString, firstDateString);
 
   const [afterRange, setAfterRange] = useState<DateRange>({
@@ -57,262 +39,15 @@ const TableComparison2GDaily: React.FC<{ data: Agg2gModel[] }> = ({ data }) => {
     endDate: createDateInTimezone(addDays(firstDateString, diffInDays < 7 ? 1 : 2)).toISOString(),
   });
 
-  // Metric configuration - easy to add new metrics
-  const metricCalculators = useMemo<MetricCalculator[]>(
-    () => [
-      {
-        name: "SDSR (%)",
-        calculate: (filteredData) => {
-          const totalNum = filteredData.reduce((sum, item) => sum + (item.NUM_SDSR || 0), 0);
-          const totalDenum = filteredData.reduce((sum, item) => sum + (item.DENUM_SDSR || 0), 0);
-          return Number(totalDenum.toFixed(2)) > 0 ? Number(((totalNum / totalDenum) * 100).toFixed(2)) : 0;
-        },
-      },
-      {
-        name: "TCH Block (%)",
-        calculate: (filteredData) => {
-          const totalNum = filteredData.reduce((sum, item) => sum + (item.NUM_TCH_BLOCK || 0), 0);
-          const totalDenum = filteredData.reduce((sum, item) => sum + (item.DENUM_TCH_BLOCK || 0), 0);
-          return Number(totalDenum.toFixed(2)) > 0 ? Number(((totalNum / totalDenum) * 100).toFixed(2)) : 0;
-        },
-      },
-      {
-        name: "SDCCH Block (%)",
-        calculate: (filteredData) => {
-          const totalNum = filteredData.reduce((sum, item) => sum + (item.NUM_SD_BLOCK || 0), 0);
-          const totalDenum = filteredData.reduce((sum, item) => sum + (item.DENUM_SD_BLOCK || 0), 0);
-          return Number(totalDenum.toFixed(2)) > 0 ? Number(((totalNum / totalDenum) * 100).toFixed(2)) : 0;
-        },
-      },
-      {
-        name: "SDCCH Drop Rate (%)",
-        calculate: (filteredData) => {
-          const totalNum = filteredData.reduce((sum, item) => sum + (item.NUM_SDCCH_DROP || 0), 0);
-          const totalDenum = filteredData.reduce((sum, item) => sum + (item.DENUM_SDCCH_DROP || 0), 0);
-          return Number(totalDenum.toFixed(2)) > 0 ? Number(((totalNum / totalDenum) * 100).toFixed(2)) : 0;
-        },
-      },
-      {
-        name: "TBF DL Establish (%)",
-        calculate: (filteredData) => {
-          const totalNum = filteredData.reduce((sum, item) => sum + (item.NUM_TBF_DL_EST || 0), 0);
-          const totalDenum = filteredData.reduce((sum, item) => sum + (item.DENUM_TBF_DL_EST || 0), 0);
-          return Number(totalDenum.toFixed(2)) > 0 ? 100 - Number(((totalNum / totalDenum) * 100).toFixed(2)) : 0;
-        },
-      },
-      {
-        name: "TBF UL Establish (%)",
-        calculate: (filteredData) => {
-          const totalNum = filteredData.reduce((sum, item) => sum + (item.NUM_TBF_UL_EST || 0), 0);
-          const totalDenum = filteredData.reduce((sum, item) => sum + (item.DENUM_TBF_UL_EST || 0), 0);
-          return Number(totalDenum.toFixed(2)) > 0 ? 100 - Number(((totalNum / totalDenum) * 100).toFixed(2)) : 0;
-        },
-      },
-      {
-        name: "TCH Drop (%)",
-        calculate: (filteredData) => {
-          const totalNum = filteredData.reduce((sum, item) => sum + (item.NUM_TCH_DROP || 0), 0);
-          const totalDenum = filteredData.reduce((sum, item) => sum + (item.DENUM_TCH_DROP || 0), 0);
-          return Number(totalDenum.toFixed(2)) > 0 ? Number(((totalNum / totalDenum) * 100).toFixed(2)) : 0;
-        },
-      },
-      {
-        name: "TBF Completion SR (%)",
-        calculate: (filteredData) => {
-          const totalNum = filteredData.reduce((sum, item) => sum + (item.NUM_TBF_COMP || 0), 0);
-          const totalDenum = filteredData.reduce((sum, item) => sum + (item.DENUM_TBF_COMP || 0), 0);
-          return Number(totalDenum.toFixed(2)) > 0 ? Number(((totalNum / totalDenum) * 100).toFixed(2)) : 0;
-        },
-      },
-      {
-        name: "EDGE DL Throughput (Kbps)",
-        calculate: (filteredData) => filteredData.reduce((sum, item) => sum + (item.EDGE_THP_KB || 0), 0),
-      },
-      {
-        name: "GPRS DL Throughput (kbps)",
-        calculate: (filteredData) => filteredData.reduce((sum, item) => sum + (item.GPRS_THP_KB || 0), 0),
-      },
-      {
-        name: "HOSR (%)",
-        calculate: (filteredData) => {
-          const totalNum = filteredData.reduce((sum, item) => sum + (item.NUM_HOSR || 0), 0);
-          const totalDenum = filteredData.reduce((sum, item) => sum + (item.DENUM_HOSR || 0), 0);
-          return Number(totalDenum.toFixed(2)) > 0 ? Number(((totalNum / totalDenum) * 100).toFixed(2)) : 0;
-        },
-      },
-      {
-        name: "TCH Availability (%)",
-        calculate: (filteredData) => {
-          const totalNum = filteredData.reduce((sum, item) => sum + (item.NUM_TCH_AVAIL || 0), 0);
-          const totalDenum = filteredData.reduce((sum, item) => sum + (item.DENUM_TCH_AVAIL || 0), 0);
-          return Number(totalDenum.toFixed(2)) > 0 ? Number(((totalNum / totalDenum) * 100).toFixed(2)) : 0;
-        },
-      },
-      {
-        name: "SDCCH Availability (%)",
-        calculate: (filteredData) => {
-          const totalNum = filteredData.reduce((sum, item) => sum + (item.NUM_SDCCH_AVAIL || 0), 0);
-          const totalDenum = filteredData.reduce((sum, item) => sum + (item.DENUM_SDCCH_AVAIL || 0), 0);
-          return Number(totalDenum.toFixed(2)) > 0 ? Number(((totalNum / totalDenum) * 100).toFixed(2)) : 0;
-        },
-      },
-      {
-        name: "SDCCH Traffic (Erl)",
-        calculate: (filteredData) => filteredData.reduce((sum, item) => sum + (item.SDCCH_TRAFFIC_ERL || 0), 0),
-      },
-      {
-        name: "TCH Traffic (Erl)",
-        calculate: (filteredData) => filteredData.reduce((sum, item) => sum + (item.TCH_TRAFFIC_ERL || 0), 0),
-      },
-      {
-        name: "Payload EDGE (MB)",
-        calculate: (filteredData) => filteredData.reduce((sum, item) => sum + (item.EDGE_PAYLOAD_MB || 0), 0),
-      },
-      {
-        name: "Payload GPRS (MB)",
-        calculate: (filteredData) => filteredData.reduce((sum, item) => sum + (item.GPRS_PAYLOAD_MB || 0), 0),
-      },
-      {
-        name: "Total Payload (MB)",
-        calculate: (filteredData) => filteredData.reduce((sum, item) => sum + (item.TOTAL_PAYLOAD_MB || 0), 0),
-      },
-      {
-        name: "DL_RX_Qual_0_5",
-        calculate: (filteredData) => {
-          const totalNum = filteredData.reduce((sum, item) => sum + (item.NUM_DL_QUAL_05 || 0), 0);
-          const totalDenum = filteredData.reduce((sum, item) => sum + (item.DENUM_DL_QUAL_05 || 0), 0);
-          return Number(totalDenum.toFixed(2)) > 0 ? Number(((totalNum / totalDenum) * 100).toFixed(2)) : 0;
-        },
-      },
-      {
-        name: "UL_RX_Qual_0_5",
-        calculate: (filteredData) => {
-          const totalNum = filteredData.reduce((sum, item) => sum + (item.NUM_UL_QUAL_05 || 0), 0);
-          const totalDenum = filteredData.reduce((sum, item) => sum + (item.DENUM_UL_QUAL_05 || 0), 0);
-          return Number(totalDenum.toFixed(2)) > 0 ? Number(((totalNum / totalDenum) * 100).toFixed(2)) : 0;
-        },
-      },
-      {
-        name: "IB Band 1-3",
-        calculate: (filteredData) => {
-          const totalNum = filteredData.reduce((sum, item) => sum + (item.NUM_IB_BAND_1_3 || 0), 0);
-          const totalDenum = filteredData.reduce((sum, item) => sum + (item.DENUM_IB_BAND_1_3 || 0), 0);
-          return Number(totalDenum.toFixed(2)) > 0 ? Number(((totalNum / totalDenum) * 100).toFixed(2)) : 0;
-        },
-      },
-      {
-        name: "IB Band 4-5",
-        calculate: (filteredData) => {
-          const totalNum = filteredData.reduce((sum, item) => sum + (item.NUM_IB_BAND_4_5 || 0), 0);
-          const totalDenum = filteredData.reduce((sum, item) => sum + (item.DENUM_IB_BAND_4_5 || 0), 0);
-          return Number(totalDenum.toFixed(2)) > 0 ? 100 - Number(((totalNum / totalDenum) * 100).toFixed(2)) : 0;
-        },
-      },
-      {
-        name: "PDTCH Congestion (%)",
-        calculate: (filteredData) => {
-          const totalNum = filteredData.reduce((sum, item) => sum + (item.NUM_PDTCH_CONGESTION || 0), 0);
-          const totalDenum = filteredData.reduce((sum, item) => sum + (item.DENUM_PDTCH_CONGESTION || 0), 0);
-          return Number(totalDenum.toFixed(2)) > 0 ? Number(((totalNum / totalDenum) * 100).toFixed(2)) : 0;
-        },
-      },
-    ],
-    [],
-  );
+  // Get metric configurations from utility
+  const metricCalculators = useMemo(() => get2GMetricConfigs(), []);
 
-  const filterByDateRange = React.useCallback(
-    (startDate: string, endDate: string): Agg2gModel[] => {
-      if (!startDate || !endDate) return [];
-
-      // Convert ISO strings to dates and set to start/end of day in the target timezone
-      const start = startOfDay(toZonedTime(new Date(startDate), timezone));
-      const end = endOfDay(toZonedTime(new Date(endDate), timezone));
-
-      // console.log('Filtering dates:', {
-      //   startDate: start.toISOString(),
-      //   endDate: end.toISOString(),
-      //   startLocal: start.toString(),
-      //   endLocal: end.toString()
-      // });
-
-      return data.filter((item) => {
-        const itemDate = toZonedTime(new Date(item.BEGIN_TIME), timezone);
-
-        // console.log('Checking item:', {
-        //   itemDate: itemDate.toISOString(),
-        //   itemDateLocal: itemDate.toString(),
-        //   inRange: itemDate >= start && itemDate <= end
-        // });
-
-        return itemDate >= start && itemDate <= end;
-      });
-    },
-    [data],
-  );
-
-  const calculateGrowth = useCallback((before: number, after: number): number => {
-    if (before === 0) return 0;
-    return ((after - before) / before) * 100;
-  }, []);
-
+  // Use the utility function
   const comparisonData = useMemo((): ComparisonResult[] => {
-    const beforeData = filterByDateRange(beforeRange.startDate, beforeRange.endDate);
-    const afterData = filterByDateRange(afterRange.startDate, afterRange.endDate);
+    return calculateComparisonData(data, metricCalculators, beforeRange, afterRange, timezone);
+  }, [data, metricCalculators, beforeRange, afterRange]);
 
-    // console.log('Data counts:', {
-    //   data: data,
-    //   beforeData: beforeData.length,
-    //   afterData: afterData.length,
-    //   beforeRange,
-    //   afterRange
-    // });
-
-    return metricCalculators.map(({ name, calculate }) => {
-      const before = calculate(beforeData);
-      const after = calculate(afterData);
-      let delta = 0;
-      if (
-        name === "SD Block (%)" ||
-        name === "TCH Block (%)" ||
-        name === "PDTCH Congestion (%)" ||
-        name === "TCH Drop (%)" ||
-        name === "SDCCH Drop Rate (%)"
-      ) {
-        delta = -(after - before);
-      } else {
-        delta = after - before;
-      }
-
-      let growth = 0;
-      if (
-        name === "SDSR (%)" ||
-        name === "DL PRB Utilization (%)" ||
-        name === "UL PRB Utilization (%)" ||
-        name === "RRC Setup Success Rate (%)" ||
-        name === "E-RAB Setup Success Rate (%)" ||
-        name === "CSFB Success Rate (%)" ||
-        name === "Intra Freq Success Rate (%)" ||
-        name === "Inter Freq Success Rate (%)" ||
-        name === "VoLTE CSSR (%)" ||
-        name === "VoLTE CALL DROP (%)"
-      ) {
-        growth = calculateSuccessRate100(before, after);
-      } else if (
-        name === "SDCCH Block (%)" ||
-        name === "TCH Block (%)" ||
-        name === "PDTCH Congestion (%)" ||
-        name === "TCH Drop (%)" ||
-        name === "SDCCH Drop Rate (%)"
-      ) {
-        growth = calculateSuccessRate0(before, after);
-      } else {
-        growth = calculateGrowth(before, after);
-      }
-
-      return { metric: name, before, after, delta, growth };
-    });
-  }, [beforeRange, afterRange, metricCalculators, filterByDateRange, calculateGrowth]);
-
+  // Rest of your component remains the same...
   const DateRangePicker = ({
     title,
     range,
@@ -345,6 +80,7 @@ const TableComparison2GDaily: React.FC<{ data: Agg2gModel[] }> = ({ data }) => {
       return toZonedTime(new Date(dateString), timezone);
     };
 
+    // ADDED RETURN STATEMENT HERE
     return (
       <div className="date-range-group">
         <h3 className="font-semibold">{title}</h3>
@@ -393,7 +129,6 @@ const TableComparison2GDaily: React.FC<{ data: Agg2gModel[] }> = ({ data }) => {
     );
   };
 
-  // Helper function to format dates for display in table
   const formatDateForDisplay = (dateString: string) => {
     if (!dateString) return "";
     const date = toZonedTime(new Date(dateString), timezone);
