@@ -4,6 +4,7 @@
 import { ChevronDown, ChevronUp } from "lucide-react";
 import TableComparison2GDaily from "./table-comparison-2g-daily-v3";
 import type { Agg2gModel } from "@/types/schema";
+import { useComparisonCalculation } from "./use-comparison-data";
 
 interface PerformanceSummarySectionProps {
   metrics: {
@@ -42,13 +43,11 @@ export function PerformanceSummaryToggle({ isExpanded, onToggle }: { isExpanded:
 export function SummaryCard({
   title,
   value,
-  data,
   description,
   color = "blue",
 }: {
   title: string;
   value: string;
-  data?: Agg2gModel[];
   description: string;
   color?: "blue" | "green" | "purple";
 }) {
@@ -81,12 +80,16 @@ export function SummaryCard({
 }
 
 export function PerformanceSummarySection({
-  metrics,
   filteredData,
   filterBy,
   isExpanded,
   onToggle,
 }: PerformanceSummarySectionProps) {
+  const { getMetric } = useComparisonCalculation(filteredData);
+
+  const tchTraffic = getMetric("TCH Traffic (Erl)");
+  const payloadMb = getMetric("Total Payload (MB)");
+
   const getFilterLabel = () => {
     switch (filterBy) {
       case "cell":
@@ -121,24 +124,23 @@ export function PerformanceSummarySection({
         // Collapsed view - show summary cards
         <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
           <SummaryCard
-            title="Productivity"
-            value={metrics.productivity.percentage}
-            data={filteredData}
+            title="TCH Traffic (Erl)"
+            value={`${tchTraffic?.growth.toFixed(2)}%`}
             description={`Based on selected ${getFilterLabel()}`}
             color="blue"
           />
           <SummaryCard
-            title="TCH Traffic (Erl)"
-            value={metrics.tchTraffic.percentage}
+            title="Payload (MB)"
+            value={`${payloadMb?.growth.toFixed(2)}%`}
             description="Average TCH traffic across all selected items"
             color="green"
           />
-          <SummaryCard
+          {/* <SummaryCard
             title="Total Payload (MB)"
             value={metrics.totalPayload.percentage}
             description="Average data payload across all selected items"
             color="purple"
-          />
+          /> */}
         </div>
       )}
     </div>

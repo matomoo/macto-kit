@@ -13,6 +13,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Button } from "@/components/ui/button";
 import { CalendarIcon } from "lucide-react";
 import { Calendar } from "@/components/ui/calendar";
+import { useComparisonCalculation } from "./use-comparison-data";
 
 const TableComparison2GDaily: React.FC<{ data: Agg2gModel[] }> = ({ data }) => {
   const timezone = "Asia/Makassar";
@@ -39,15 +40,8 @@ const TableComparison2GDaily: React.FC<{ data: Agg2gModel[] }> = ({ data }) => {
     endDate: createDateInTimezone(addDays(firstDateString, diffInDays < 7 ? 1 : 2)).toISOString(),
   });
 
-  // Get metric configurations from utility
-  const metricCalculators = useMemo(() => get2GMetricConfigs(), []);
+  const { comparisonData } = useComparisonCalculation(data);
 
-  // Use the utility function
-  const comparisonData = useMemo((): ComparisonResult[] => {
-    return calculateComparisonData(data, metricCalculators, beforeRange, afterRange, timezone);
-  }, [data, metricCalculators, beforeRange, afterRange]);
-
-  // Rest of your component remains the same...
   const DateRangePicker = ({
     title,
     range,
@@ -80,7 +74,6 @@ const TableComparison2GDaily: React.FC<{ data: Agg2gModel[] }> = ({ data }) => {
       return toZonedTime(new Date(dateString), timezone);
     };
 
-    // ADDED RETURN STATEMENT HERE
     return (
       <div className="date-range-group">
         <h3 className="font-semibold">{title}</h3>
@@ -146,7 +139,9 @@ const TableComparison2GDaily: React.FC<{ data: Agg2gModel[] }> = ({ data }) => {
         <div className="grid gap-2 rounded-2xl bg-slate-100 p-4">
           <h3 className="font-semibold">Productivity</h3>
           {comparisonData
-            .filter((row) => row.metric === "TCH Traffic (Erl)" || row.metric === "Total Payload (MB)")
+            .filter((row) => {
+              return row.metric === "TCH Traffic (Erl)" || row.metric === "Total Payload (MB)";
+            })
             .map((row, _index) => (
               <div key={row.metric}>
                 <div
