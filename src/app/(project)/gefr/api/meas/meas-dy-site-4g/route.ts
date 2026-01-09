@@ -1,5 +1,5 @@
 // biome-ignore assist/source/organizeImports: <will fix later>
-import type { Agg4gModel } from "@/types/schema";
+import type { Data2G4GModel } from "@/types/schema";
 import { db_gefrdb_suldbv1 } from "../../../_drizzle/db_gefr_suldb";
 import { sql } from "drizzle-orm";
 
@@ -26,7 +26,7 @@ export async function GET(request: Request) {
     formattedTgl1 = new Date(tgl_1).toISOString();
     formattedTgl2 = new Date(tgl_2).toISOString();
 
-    const result = await db_gefrdb_suldbv1.execute<Agg4gModel>(sql`
+    const result = await db_gefrdb_suldbv1.execute<Data2G4GModel>(sql`
           SELECT
             t1."Begin Time" AS "BEGIN_TIME",
             t1."Cell Name" as "CELL_NAME",

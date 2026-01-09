@@ -6,15 +6,17 @@ import { Download, Filter } from "lucide-react";
 interface HeaderProps {
   onExportData: () => void;
   onToggleMobileFilters: () => void;
+  title?: string;
+  subtitle?: string;
 }
 
-export function Header({ onExportData, onToggleMobileFilters }: HeaderProps) {
+export function Header({ onExportData, onToggleMobileFilters, title, subtitle }: HeaderProps) {
   return (
     <div className="sticky top-0 z-30 border-b bg-white px-4 py-3 shadow-sm lg:px-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="font-bold text-gray-900 text-xl">2G Network Performance</h1>
-          <p className="text-gray-600 text-sm">Real-time metrics and analysis dashboard</p>
+          <h1 className="font-bold text-gray-900 text-xl">{title || "2G Network Performance"}</h1>
+          <p className="text-gray-600 text-sm">{subtitle || "Real-time metrics and analysis dashboard"}</p>
         </div>
         <div className="flex items-center gap-3">
           <button

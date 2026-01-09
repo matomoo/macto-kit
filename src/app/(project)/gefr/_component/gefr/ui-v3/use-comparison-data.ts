@@ -3,12 +3,12 @@
 import { useMemo } from "react";
 import { subDays, differenceInDays, addDays } from "date-fns";
 import { toZonedTime, fromZonedTime } from "date-fns-tz";
-import type { Agg2gModel } from "@/types/schema";
+import type { Data2G4GModel } from "@/types/schema";
 import type { ComparisonResult, DateRange } from "./comparison-types";
-import { get2GMetricConfigs } from "./metric-configs";
+import { get2G4GMetricConfigs } from "./metric-configs";
 import { calculateComparisonData } from "./comparison-calculator";
 
-export function useComparisonCalculation(data: Agg2gModel[], timezone = "Asia/Makassar") {
+export function useComparisonCalculation(data: Data2G4GModel[], tech: string, timezone = "Asia/Makassar") {
   // Calculate default date ranges
   const { beforeRange, afterRange } = useMemo(() => {
     if (!data || data.length === 0) {
@@ -44,7 +44,7 @@ export function useComparisonCalculation(data: Agg2gModel[], timezone = "Asia/Ma
   }, [data, timezone]);
 
   // Get metric configurations
-  const metricCalculators = useMemo(() => get2GMetricConfigs(), []);
+  const metricCalculators = useMemo(() => get2G4GMetricConfigs().filter((config) => config.tech === tech), [tech]);
 
   // Calculate comparison data
   const comparisonData = useMemo((): ComparisonResult[] => {

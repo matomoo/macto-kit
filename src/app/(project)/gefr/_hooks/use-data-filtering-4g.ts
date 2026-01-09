@@ -2,7 +2,7 @@
 // biome-ignore assist/source/organizeImports: <will fix later>
 import { useMemo } from "react";
 import type { Data2G4GModel } from "@/types/schema";
-import { extractBandFromCellName, extractCellName } from "../_function/helper";
+import { extractBandFromCellName4G, extractCellName } from "../_function/helper";
 
 interface UseDataFilteringProps {
   data: { rows: Data2G4GModel[] } | undefined;
@@ -13,7 +13,7 @@ interface UseDataFilteringProps {
   aggregateBy: string;
 }
 
-export function useDataFiltering({
+export function useDataFiltering4G({
   data,
   filterBy,
   selectedCells,
@@ -28,7 +28,7 @@ export function useDataFiltering({
       if (!data || selectedCells.length === 0) return [];
 
       return data.rows.filter((item: Data2G4GModel) => {
-        const cellName = aggregateBy.includes("BTS")
+        const cellName = aggregateBy.includes("CELL")
           ? extractCellName(String(item[aggregateBy as keyof Data2G4GModel] ?? "Unknown"))
           : (String(item[aggregateBy as keyof Data2G4GModel]) ?? "Unknown");
         return selectedCells.includes(cellName);
@@ -39,7 +39,7 @@ export function useDataFiltering({
       if (!data || selectedSectors.length === 0) return [];
 
       return data.rows.filter((item: Data2G4GModel) => {
-        const cellName = aggregateBy.includes("BTS")
+        const cellName = aggregateBy.includes("CELL")
           ? extractCellName(String(item[aggregateBy as keyof Data2G4GModel] ?? "Unknown"))
           : (String(item[aggregateBy as keyof Data2G4GModel]) ?? "Unknown");
         const sector = cellName.slice(-1);
@@ -51,10 +51,10 @@ export function useDataFiltering({
       if (!data || selectedBands.length === 0) return [];
 
       return data.rows.filter((item: Data2G4GModel) => {
-        const cellName = aggregateBy.includes("BTS")
+        const cellName = aggregateBy.includes("CELL")
           ? extractCellName(String(item[aggregateBy as keyof Data2G4GModel] ?? "Unknown"))
           : (String(item[aggregateBy as keyof Data2G4GModel]) ?? "Unknown");
-        const band = extractBandFromCellName(cellName);
+        const band = extractBandFromCellName4G(cellName);
         return selectedBands.includes(band);
       });
     }

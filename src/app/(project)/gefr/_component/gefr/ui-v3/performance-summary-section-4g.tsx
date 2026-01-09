@@ -79,7 +79,7 @@ export function SummaryCard({
   );
 }
 
-export function PerformanceSummarySection({
+export function PerformanceSummarySection4G({
   filteredData,
   filterBy,
   isExpanded,
@@ -142,4 +142,4 @@ export function PerformanceSummarySection({
 }
 
 // Optional: Default export if you prefer
-export default PerformanceSummarySection;
+export default PerformanceSummarySection4G;

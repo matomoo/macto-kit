@@ -1,12 +1,14 @@
-import type { Agg2gModel } from "@/types/schema";
+import type { Data2G4GModel } from "@/types/schema";
 
 export interface MetricConfig {
   name: string;
-  calculate: (data: Agg2gModel[]) => number;
+  tech: "2G" | "4G";
+  calculate: (data: Data2G4GModel[]) => number;
   growthType?: "successRate100" | "successRate0" | "standard" | "inverse";
 }
 
 export interface ComparisonResult {
+  tech: "2G" | "4G";
   metric: string;
   before: number;
   after: number;

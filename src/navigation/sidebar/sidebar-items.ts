@@ -35,21 +35,6 @@ export const sidebarItems: NavGroup[] = [
         url: "/dashboard/default",
         icon: LayoutDashboard,
       },
-      {
-        title: "CRM",
-        url: "/dashboard/crm",
-        icon: ChartBar,
-      },
-      {
-        title: "Finance",
-        url: "/dashboard/finance",
-        icon: Banknote,
-      },
-      // {
-      //   title: "Account",
-      //   url: "/dashboard/account",
-      //   icon: Banknote,
-      // },
     ],
   },
   {
@@ -84,6 +69,21 @@ export const sidebarItems: NavGroup[] = [
             title: "2G Site Level Hourly",
             url: "/gefr/monitoring/v2/2g/site/hourly",
           },
+        ],
+      },
+      {
+        title: "4G Site",
+        url: "#",
+        icon: Fingerprint,
+        subItems: [
+          {
+            title: "4G Site Level Daily",
+            url: "/gefr/monitoring/v2/4g/site/daily",
+          },
+          // {
+          //   title: "4G Site Level Hourly",
+          //   url: "/gefr/monitoring/v2/4g/site/hourly",
+          // },
         ],
       },
     ],

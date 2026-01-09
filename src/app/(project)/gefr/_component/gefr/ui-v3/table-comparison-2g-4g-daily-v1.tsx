@@ -13,7 +13,7 @@ import { CalendarIcon } from "lucide-react";
 import { Calendar } from "@/components/ui/calendar";
 import { useComparisonCalculation } from "./use-comparison-data";
 
-const TableComparison2GDaily: React.FC<{ data: Data2G4GModel[] }> = ({ data }) => {
+const TableComparison2G4GDaily: React.FC<{ data: Data2G4GModel[]; tech: string }> = ({ data, tech }) => {
   const timezone = "Asia/Makassar";
 
   const dateStrings = data.map((item) => item.BEGIN_TIME);
@@ -38,7 +38,7 @@ const TableComparison2GDaily: React.FC<{ data: Data2G4GModel[] }> = ({ data }) =
     endDate: createDateInTimezone(addDays(firstDateString, diffInDays < 7 ? 1 : 2)).toISOString(),
   });
 
-  const { comparisonData } = useComparisonCalculation(data);
+  const { comparisonData } = useComparisonCalculation(data, tech);
 
   const DateRangePicker = ({
     title,
@@ -137,6 +137,7 @@ const TableComparison2GDaily: React.FC<{ data: Data2G4GModel[] }> = ({ data }) =
         <div className="grid gap-2 rounded-2xl bg-slate-100 p-4">
           <h3 className="font-semibold">Productivity</h3>
           {comparisonData
+            // .filter((row) => { return row.tech === tech })
             .filter((row) => {
               return row.metric === "TCH Traffic (Erl)" || row.metric === "Total Payload (MB)";
             })
@@ -175,34 +176,36 @@ const TableComparison2GDaily: React.FC<{ data: Data2G4GModel[] }> = ({ data }) =
               </tr>
             </thead>
             <tbody>
-              {comparisonData.map((row, _index) => (
-                <tr key={row.metric} className="hover:bg-gray-50">
-                  <td className="border border-gray-200 p-3 font-medium">{row.metric}</td>
-                  <td className="border border-gray-200 p-3 text-right">{row.before.toFixed(2)}</td>
-                  <td className="border border-gray-200 p-3 text-right">{row.after.toFixed(2)}</td>
-                  <td
-                    className={`border border-gray-200 p-3 text-right ${
-                      row.growth > 5 ? "text-green-600" : row.growth < -5 ? "text-red-600" : "text-yellow-600"
-                    }`}
-                  >
-                    {row.delta.toFixed(2)}
-                  </td>
-                  <td
-                    className={`border border-gray-200 p-3 text-right ${
-                      row.growth > 5 ? "text-green-600" : row.growth < -5 ? "text-red-600" : "text-yellow-600"
-                    }`}
-                  >
-                    {row.growth.toFixed(2)}%
-                  </td>
-                  <td
-                    className={`border border-gray-200 p-3 text-center ${
-                      row.growth > 5 ? "text-green-600" : row.growth < -5 ? "text-red-600" : "text-yellow-600"
-                    }`}
-                  >
-                    {row.growth > 5 ? "Improved" : row.growth < -5 ? "Degrade" : "Maintain"}
-                  </td>
-                </tr>
-              ))}
+              {comparisonData
+                // .filter((row) => { return row.tech === tech })
+                .map((row, _index) => (
+                  <tr key={row.metric} className="hover:bg-gray-50">
+                    <td className="border border-gray-200 p-3 font-medium">{row.metric}</td>
+                    <td className="border border-gray-200 p-3 text-right">{row.before.toFixed(2)}</td>
+                    <td className="border border-gray-200 p-3 text-right">{row.after.toFixed(2)}</td>
+                    <td
+                      className={`border border-gray-200 p-3 text-right ${
+                        row.growth > 5 ? "text-green-600" : row.growth < -5 ? "text-red-600" : "text-yellow-600"
+                      }`}
+                    >
+                      {row.delta.toFixed(2)}
+                    </td>
+                    <td
+                      className={`border border-gray-200 p-3 text-right ${
+                        row.growth > 5 ? "text-green-600" : row.growth < -5 ? "text-red-600" : "text-yellow-600"
+                      }`}
+                    >
+                      {row.growth.toFixed(2)}%
+                    </td>
+                    <td
+                      className={`border border-gray-200 p-3 text-center ${
+                        row.growth > 5 ? "text-green-600" : row.growth < -5 ? "text-red-600" : "text-yellow-600"
+                      }`}
+                    >
+                      {row.growth > 5 ? "Improved" : row.growth < -5 ? "Degrade" : "Maintain"}
+                    </td>
+                  </tr>
+                ))}
             </tbody>
           </table>
         </div>
@@ -211,4 +214,4 @@ const TableComparison2GDaily: React.FC<{ data: Data2G4GModel[] }> = ({ data }) =
   );
 };
 
-export default TableComparison2GDaily;
+export default TableComparison2G4GDaily;

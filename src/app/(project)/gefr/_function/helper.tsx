@@ -138,6 +138,33 @@ export const extractBandFromCellName = (cellName: string): string => {
   }
 };
 
+export const extractBandFromCellName4G = (cellName: string): string => {
+  if (!cellName || cellName.length < 4) return "XXX";
+
+  // Extract MD from left(right(cellname,4),2)
+  const lastFourChars = cellName.slice(-4);
+  const bandCode = lastFourChars.slice(0, 2);
+  // Map band codes to actual band names
+  switch (bandCode) {
+    case "ML":
+      return "L1800";
+    case "MT":
+      return "L900";
+    case "MR":
+      return "L2100";
+    case "ME":
+      return "L2300";
+    case "TE":
+      return "L2300";
+    case "MF":
+      return "L2300";
+    case "TF":
+      return "L2300";
+    default:
+      return "XXX";
+  }
+};
+
 // Band Indicator Component
 export const BandIndicator = ({ band }: { band: string }) => {
   const getBandColor = (band: string) => {

@@ -177,7 +177,7 @@ export function EnhancedFilterWithSearch({
   );
 }
 
-export function FilterSidebar({
+export function FilterSidebar4G({
   allCells,
   filterBy,
   selectedCells,
@@ -407,4 +407,4 @@ export function FilterSidebar({
 }
 
 // Default export for convenience
-export default FilterSidebar;
+export default FilterSidebar4G;
