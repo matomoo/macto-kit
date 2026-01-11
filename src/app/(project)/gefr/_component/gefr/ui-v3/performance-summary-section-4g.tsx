@@ -85,10 +85,10 @@ export function PerformanceSummarySection4G({
   isExpanded,
   onToggle,
 }: PerformanceSummarySectionProps) {
-  const { getMetric } = useComparisonCalculation(filteredData, "2G");
+  const { getMetric } = useComparisonCalculation(filteredData, "4G");
 
-  const tchTraffic = getMetric("TCH Traffic (Erl)");
-  const payloadMb = getMetric("Total Payload (MB)");
+  const tchTraffic = getMetric("Total Payload (GB)");
+  const payloadMb = getMetric("Traffic VoLTE (KErl)");
 
   const getFilterLabel = () => {
     switch (filterBy) {
@@ -118,7 +118,7 @@ export function PerformanceSummarySection4G({
       {isExpanded ? (
         // Expanded view - show full table
         <div className="overflow-hidden rounded-xl border bg-white shadow-sm">
-          <TableComparison2G4GDaily data={filteredData} tech="2G" />
+          <TableComparison2G4GDaily data={filteredData} tech="4G" />
         </div>
       ) : (
         // Collapsed view - show summary cards

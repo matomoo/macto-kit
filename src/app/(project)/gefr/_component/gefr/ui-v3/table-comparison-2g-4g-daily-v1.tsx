@@ -139,7 +139,12 @@ const TableComparison2G4GDaily: React.FC<{ data: Data2G4GModel[]; tech: string }
           {comparisonData
             // .filter((row) => { return row.tech === tech })
             .filter((row) => {
-              return row.metric === "TCH Traffic (Erl)" || row.metric === "Total Payload (MB)";
+              return (
+                row.metric === "TCH Traffic (Erl)" ||
+                row.metric === "Total Payload (MB)" ||
+                row.metric === "Total Payload (GB)" ||
+                row.metric === "Traffic VoLTE (KErl)"
+              );
             })
             .map((row, _index) => (
               <div key={row.metric}>
